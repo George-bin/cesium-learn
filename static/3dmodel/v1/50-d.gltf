@@ -1,0 +1,149 @@
+{
+  "accessors": [
+    {
+      "name": "多边形-Mesh_0_indices",
+      "componentType": 5123,
+      "count": 996,
+      "min": [
+        0
+      ],
+      "max": [
+        193
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "name": "多边形-Mesh_0_positions",
+      "componentType": 5126,
+      "count": 194,
+      "min": [
+        87.03469848632812,
+        -1.1583659648895264,
+        133.03469848632812
+      ],
+      "max": [
+        238.96530151367188,
+        26.643537521362305,
+        536.6435546875
+      ],
+      "type": "VEC3"
+    },
+    {
+      "name": "多边形-Mesh_0_normals",
+      "componentType": 5126,
+      "count": 194,
+      "min": [
+        -0.8411204814910889,
+        -0.8392505049705505,
+        -0.9919989109039307
+      ],
+      "max": [
+        0.8244388699531555,
+        0.8411203026771545,
+        0.992104172706604
+      ],
+      "type": "VEC3"
+    },
+    {
+      "name": "多边形-Mesh_0_texcoords",
+      "componentType": 5126,
+      "count": 194,
+      "min": [
+        0.0007018343894742429,
+        0.411257803440094
+      ],
+      "max": [
+        0.9994661808013916,
+        0.5937694311141968
+      ],
+      "type": "VEC2"
+    }
+  ],
+  "asset": {
+    "generator": "obj2gltf",
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "name": "50-d",
+      "byteLength": 1520,
+      "uri": "data:application/octet-stream;base64,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"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 1519
+    }
+  ],
+  "materials": [
+    {
+      "name": "Default",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.95
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": false
+    }
+  ],
+  "meshes": [
+    {
+      "name": "多边形-Mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1,
+            "NORMAL": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 0,
+          "material": 0,
+          "mode": 4,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 0,
+              "attributes": {
+                "POSITION": 0,
+                "NORMAL": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "多边形",
+      "mesh": 0
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "extensionsUsed": [
+    "KHR_draco_mesh_compression"
+  ]
+}

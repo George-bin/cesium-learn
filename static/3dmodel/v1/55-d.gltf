@@ -1,0 +1,149 @@
+{
+  "accessors": [
+    {
+      "name": "多边形-Mesh_0_indices",
+      "componentType": 5123,
+      "count": 480,
+      "min": [
+        0
+      ],
+      "max": [
+        93
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "name": "多边形-Mesh_0_positions",
+      "componentType": 5126,
+      "count": 94,
+      "min": [
+        152.11965942382812,
+        -1.0096386671066284,
+        259.9832458496094
+      ],
+      "max": [
+        216.40029907226562,
+        1.0096386671066284,
+        341.59613037109375
+      ],
+      "type": "VEC3"
+    },
+    {
+      "name": "多边形-Mesh_0_normals",
+      "componentType": 5126,
+      "count": 94,
+      "min": [
+        -0.7790013551712036,
+        -1,
+        -0.8506503105163574
+      ],
+      "max": [
+        0.7790014743804932,
+        1,
+        0.8506503105163574
+      ],
+      "type": "VEC3"
+    },
+    {
+      "name": "多边形-Mesh_0_texcoords",
+      "componentType": 5126,
+      "count": 94,
+      "min": [
+        0.3426194489002228,
+        0.4934174418449402
+      ],
+      "max": [
+        0.8574696779251099,
+        0.506582498550415
+      ],
+      "type": "VEC2"
+    }
+  ],
+  "asset": {
+    "generator": "obj2gltf",
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "name": "55-d",
+      "byteLength": 876,
+      "uri": "data:application/octet-stream;base64,RFJBQ08CAgEBAAAAXqABApkBBAAoX1WLr6rFV9Xiq2rxVbX4qlr8q/pS0ncllEK1SlW1SlU9Vap0qyoUAAECcED/ArRZ/wK0WQP/AAAAAAABAAABAAkDAAACAQEJAwABAwEDCQIAAgIBAQEADwOpD10BC10BaQOJCekbDQKwsANdAR3G5r/AKKNo/jgfFCkOb+e2e32q59zrbOts62zob/0gh5BDOATgEACAhg0bAmgIoCGAUR2qzCEAhwAANGzYEEBDAA0BjOpQZQ4BOAQAoGHDhgAaAmgIIFSHJnMIwCEAAA0bNgTQEEBDAHLoEOrnEIBDAAAaNmwIoCEAAABy6JDKOATgEACAhg0bAmgIoCEAqtMh8CPc5FXZhk3KyqIq/7L5omhaSeSQggKLUq9eAGyAk3nX8HK4CwAboLeyteuuW0p5CgDHyf+i+luj8iQAwKGK6ElUMsBwCAAAMJucoiqAyQEEAACzyQKAyQGEROLa20YJVTnhtndKaAqbmkR6AXZPTloBWH4IWLNhOVQJAAAAAP8/AACiHhhD1zuBv9v9gUPMOaNCDgYDAQALAy0IB10BsDkKC5ErEv7ryKteUdzwWztFJV9cO0V/S7uLIIoi7L67CCLsjiiyuwiiKMLuu4sgwu6IIruLIIoi7L67CCLsjiiyuwiiKMLuu4sgwu6IIruLIIoi7L67CCLsjiiyuwiiKMLuu4sgwu6IIiTgrn8B4UPQ/wDxwwB/BcgDsb8CSuiOPgzvk1AB9A3430D69iuA//r8OyAC7gxwX54RuN//AAnYH4D/9yNAv/7+B2B/Ak8huJ8+AwjcH38J8GcQHx5U76rA+ud74DwLZUiE8hTQrzsT0eSPAP8DAAD/AQAA/wJXRwoFAQEACAddAWkDaQPhGckVLQgaKCQKONf1nG8bf7/AckRWnHL8tn2AI0cJPoRXooUJAKuAnVdPezoi6AHIqmBr1tWmliiaBDQL2Jp5xaklgh4A7gK4Zn6x8GjgALgoQGfFgC6Hhg6Aqwq2Xj2t8KgwQ03Q9KGxW+027ToarQdeIyhIwsx4JgWOIQUqkAM7oKQ/8G82OcCgi0Sf3bwACALA37DiCcgDCaLEvFICUAAAAGAMgDxSgT3eTRHu+CyBAAAAAP8PAADRa68+NqH8PjrNAz8MAAAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 873
+    }
+  ],
+  "materials": [
+    {
+      "name": "Default",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.95
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": false
+    }
+  ],
+  "meshes": [
+    {
+      "name": "多边形-Mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1,
+            "NORMAL": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 0,
+          "material": 0,
+          "mode": 4,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 0,
+              "attributes": {
+                "POSITION": 0,
+                "NORMAL": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "多边形",
+      "mesh": 0
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "extensionsRequired": [
+    "KHR_draco_mesh_compression"
+  ],
+  "extensionsUsed": [
+    "KHR_draco_mesh_compression"
+  ]
+}
