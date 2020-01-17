@@ -1,10 +1,6 @@
 <template>
   <div class="cesium-demo-component">
     <div id="china" style="width: 100%; height: 100%"></div>
-    <!-- 控制裁切 -->
-    <!-- <div class="clip-section">
-      <h3>模型切面</h3>
-    </div>-->
     <!-- 位置信息 -->
     <coordinates-component></coordinates-component>
     <!-- 切面 -->
@@ -15,19 +11,23 @@
       @updateSelectedPlane="handleUpdateSelectedPlane"
       @initEnableInputs="handleInitEnableInputs"
     ></clip-plane>
+    <!-- 时间轴 -->
+    <time-line v-show="active === 'timeline'" :activeShowModelIndex="activeShowModelIndex"></time-line>
   </div>
 </template>
 
 <script>
 let Cesium = null;
 import { gis } from "@/config/";
-import CesiumNavigation from "cesium-navigation-es6";
+// import CesiumNavigation from "cesium-navigation-es6";
+// 时间轴
+let timer = null;
 export default {
   name: "HelloWorld",
   components: {
-    CoordinatesComponent: () =>
-      import("@/components/Home/CoordinatesComponent"),
-    ClipPlane: () => import("@/components/Home/ClipPlane")
+    CoordinatesComponent: () => import("@/components/Home/CoordinatesComponent"),
+    ClipPlane: () => import("@/components/Home/ClipPlane"),
+    TimeLine: () => import("@/components/Home/TimeLine")
   },
   data() {
     return {
@@ -54,6 +54,9 @@ export default {
       color50: null,
       color55: null,
       color60: null,
+      timeline: [10, 15, 20, 25, 30, 35, 40, 45, 50, 55],
+      activeShowModelIndex: 1,
+      active: 'lengthways'
     };
   },
   watch: {
@@ -174,11 +177,12 @@ export default {
         dataSources: new Cesium.DataSourceCollection(),
         // vrButton: false,
         // 地球表面贴图
-        // imageryProvider: new Cesium.UrlTemplateImageryProvider({
-        //   url: "http://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/3/{y}/{x}",
-        //   maximumLevel: 13,
-        //   minimumLevel: 3
-        // })
+        imageryProvider: new Cesium.UrlTemplateImageryProvider({
+          url: 'http://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}'
+          // url: "http://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/3/{y}/{x}",
+          // maximumLevel: 13,
+          // minimumLevel: 3
+        })
       });
       this.scene = window.viewer.scene;
       // 去除版权信息
@@ -246,7 +250,7 @@ export default {
       // 加载模型 start
       this.handleLoadLengthwaysModel()
       // this.handleInitCropEvent();
-      this.initCesiumNavigation();
+      // this.initCesiumNavigation();
     },
     // 指北针
     initCesiumNavigation() {
@@ -265,17 +269,18 @@ export default {
     },
     // 加载纵向裁切模型
     handleLoadLengthwaysModel() {
-      this.loadLengthwaysModel(10, this.color10, true);
+      this.loadLengthwaysModel(10, this.color10, false);
       this.loadLengthwaysModel(15, this.color15, false);
-      this.loadLengthwaysModel(20, this.color20, false);
-      this.loadLengthwaysModel(25, this.color25, false);
+      this.loadLengthwaysModel(20, this.color20, true);
+      this.loadLengthwaysModel(25, this.color25, true);
       this.loadLengthwaysModel(30, this.color30, true);
-      this.loadLengthwaysModel(35, this.color35, false);
+      this.loadLengthwaysModel(35, this.color35, true);
       this.loadLengthwaysModel(40, this.color40, true);
       this.loadLengthwaysModel(45, this.color45, true);
       this.loadLengthwaysModel(50, this.color50, true);
       this.loadLengthwaysModel(55, this.color55, true);
     },
+    // 加载横向裁切模型
     handleLoadLevelModel() {
       this.loadLevelModel(10, this.color10, true);
       this.loadLevelModel(15, this.color15, false);
@@ -287,6 +292,19 @@ export default {
       this.loadLevelModel(45, this.color45, true);
       this.loadLevelModel(50, this.color50, true);
       this.loadLevelModel(55, this.color55, true);
+    },
+    // 加载模型
+    handleLoadTimeLineModel() {
+      this.loadTimeLineModel(10, this.color10, true);
+      this.loadTimeLineModel(15, this.color15, false);
+      this.loadTimeLineModel(20, this.color20, false);
+      this.loadTimeLineModel(25, this.color25, false);
+      this.loadTimeLineModel(30, this.color30, false);
+      this.loadTimeLineModel(35, this.color35, false);
+      this.loadTimeLineModel(40, this.color40, false);
+      this.loadTimeLineModel(45, this.color45, false);
+      this.loadTimeLineModel(50, this.color50, false);
+      this.loadTimeLineModel(55, this.color55, false);
     },
     // 裁切事件
     handleInitCropEvent() {
@@ -335,8 +353,6 @@ export default {
         }
       }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
     },
-    // 纵向裁切
-    handleInitLengthwaysClipEvent() {},
     // 添加图层
     handleAddImageryProvider() {
       // 卫星图层
@@ -699,13 +715,60 @@ export default {
       }
       entity.show = isHidden;
     },
+    // 加载模型
+    loadTimeLineModel(name, color, isHidden) {
+      let imagePath = "";
+      let that = this;
+      if (process.env.NODE_ENV === "production") {
+        imagePath = "gis/";
+      }
+      // let url = '../../../' + gis.host + 'static/3dmodel/' + name + '-d.gltf';
+      let url =
+        "../../../" +
+        gis.host +
+        imagePath +
+        "static/3dmodel/" +
+        name +
+        "-d.gltf";
+      // console.log("url", url);
+
+      let distance = 0;
+      var position = Cesium.Cartesian3.fromDegrees(116.5, 34.5, 200000);
+      // 设置模型方向
+      var heading = Cesium.Math.toRadians(89); // 旋转
+      var pitch = 0; // 上下翻转
+      var roll = 0; // 左右翻转
+      var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+      var orientation = Cesium.Transforms.headingPitchRollQuaternion(
+        position,
+        hpr
+      );
+      var entity = window.viewer.entities.add({
+        id: name,
+        name: "gltfModel",
+        position: position,
+        orientation: orientation,
+        model: {
+          uri: url,
+          scale: 2000,
+          minimumPixelSize: 100.0,
+          color: color,
+          show: true,
+          colorBlendMode: 1
+        }
+      });
+      // window.viewer.trackedEntity = entity;
+
+      entity.show = isHidden;
+    },
     handleInitEnableInputs() {
       this.scene.screenSpaceCameraController.enableInputs = true;
     },
     handleUpdateSelectedPlane(e) {
+      this.active = e;
       // console.log(window.viewer.entities.removeAll())
       this.scene.screenSpaceCameraController.enableInputs = true;
-      console.log('this.targetY', this.targetY)
+      // console.log('this.targetY', this.targetY)
       if (e === 'lengthways') {
         if (window.viewer.entities.getById("lengthwaysPlane010")) return
         window.viewer.entities.removeAll()
@@ -719,14 +782,44 @@ export default {
         // });
         this.targetX = 15000.0
         this.targetY = 15000.0
+        clearInterval(timer);
+        this.activeShowModelIndex = 1;
         this.handleLoadLengthwaysModel()
-        // window.viewer.entities.remove('10');
-      } else {
+      } else if (e === 'level') {
         if (window.viewer.entities.getById("levelPlane010")) return
         window.viewer.entities.removeAll()
         this.targetZ = 15000.0
+        clearInterval(timer);
+        this.activeShowModelIndex = 1;
         this.handleLoadLevelModel()
+      } else {
+        window.viewer.entities.removeAll()
+        this.targetX = 15000.0
+        this.targetY = 15000.0
+        this.targetZ = 15000.0
+        this.handleLoadTimeLineModel()
+        timer = setInterval(() => {
+          let len = this.timeline.length;
+          for (let i = 0; i < len; i++) {
+            let entitie = viewer.entities.getById(this.timeline[i]);
+            if (i === this.activeShowModelIndex) {
+              entitie.show = true
+            } else {
+              entitie.show = false
+            }
+          }
+          if (this.activeShowModelIndex < len ) {
+            this.activeShowModelIndex += 1;
+          } else {
+            this.activeShowModelIndex = 0;
+          }
+        }, 500);
       }
+    },
+    // 删除实体
+    handleRemoveEntities(id) {
+      let entitie = viewer.entities.getById(id);
+      viewer.entities.remove();
     }
   }
 };
