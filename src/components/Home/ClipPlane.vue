@@ -7,9 +7,13 @@
           @click="hanldeSelectPlane('lengthways')"
         >纵向裁切</span>
         <span
-          :class="{ 'active-tab_item': active !== 'lengthways' }"
+          :class="{ 'active-tab_item': active === 'level' }"
           @click="hanldeSelectPlane('level')"
         >水平裁切</span>
+        <span
+          :class="{ 'active-tab_item': active === 'timeline' }"
+          @click="hanldeSelectPlane('timeline')"
+        >时间轴</span>
       </nav>
       <!-- 纵向裁切 -->
       <div v-if="active === 'lengthways'" class="clip-plane-tap-item">
@@ -20,7 +24,7 @@
         ></el-slider>
       </div>
       <!-- 水平裁切 -->
-      <div v-else class="clip-plane-tap-item">
+      <div v-else-if="active === 'level'" class="clip-plane-tap-item">
         <el-slider
           v-model="clipValueX"
           @input="handleClipXInput"
@@ -86,9 +90,16 @@ export default {
         this.clipValueY = 0;
         this.$emit("update:clipX", 0);
         this.$emit("update:clipY", 0);
-      } else {
+      } else if (type === 'level') {
         this.clipValueZ = 0;
         this.$emit("update:clipZ", 0);
+      } else {
+        this.clipValueX = 0;
+        this.clipValueY = 0;
+        this.clipValueZ = 0;
+        this.$emit("update:clipZ", 0);
+        this.$emit("update:clipX", 0);
+        this.$emit("update:clipY", 0);
       }
       this.active = type;
       this.$nextTick(() => {
@@ -112,14 +123,18 @@ export default {
       font-size: 14px;
       span {
         display: inline-block;
+        width: 80px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        cursor: pointer;
       }
       .active-tab_item {
-        padding: 10px;
+        // padding: 10px;
         border-bottom: 2px solid #409eff;
       }
     }
     .clip-plane-tap-item {
-      width: 200px;
       h4 {
         font-size: 14px;
         font-weight: normal;
