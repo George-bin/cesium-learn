@@ -4,9 +4,12 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 // 引入cesium样式文件
-import Cesium from 'cesium/Cesium'
+import * as Cesium from 'cesium/Cesium'
 import 'cesium/Widgets/widgets.css'
 Vue.prototype.$Cesium = Cesium
+window.Cesium = Cesium
+// ion账户提供一个token去访问Bing影像底图
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmOWZmZWY1OS0zYTU1LTRmMGUtYjNiMy1mMWFlYzk3YTRkYzEiLCJpZCI6MTQ3MDgsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjYyMDQyNDV9.tV8bTbhuvpVvblMieYm7KvRqUBFxEx-IHTCHMqynVi0"
 
 // 引入echarts
 import echarts from 'echarts'

@@ -10,12 +10,12 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "cesium": "^1.61.0",
-    "cesium-navigation-es6": "^1.0.8",
+    "cesium": "^1.64.0",
     "d3": "^5.14.2",
     "echarts": "^4.5.0",
     "element-ui": "^2.13.0",
     "jquery": "^3.4.1",
+    "three": "^0.113.2",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },

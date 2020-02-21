@@ -14,6 +14,31 @@ export default new Router({
       component: Home
     },
     {
+      path: '/introduction',
+      name: 'Introduction',
+      component: () => import('@/views/Introduction/Introduction')
+    },
+    {
+      path: '/imageryProvider',
+      name: 'ImageryProvider',
+      component: () => import('@/views/ImageryProvider/ImageryProvider')
+    },
+    {
+      path: '/terrian',
+      name: 'Terrian',
+      component: () => import('@/views/Terrian/Terrian')
+    },
+    {
+      path: '/gltf',
+      name: 'Gltf',
+      component: () => import('@/views/Gltf/Gltf')
+    },
+    {
+      path: '/geometry',
+      name: 'Geometry',
+      component: () => import('@/views/Geometry/Geometry')
+    },
+    {
       path: '/echarts',
       name: 'echarts',
       component: EchartsDemo

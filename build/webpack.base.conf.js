@@ -3,6 +3,7 @@ const path = require('path')
 const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
+const webpack = require('webpack')  //这里引入webpack
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
@@ -32,7 +33,8 @@ module.exports = {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
       // cesium配置
-      'cesium': path.resolve(__dirname, '../node_modules/cesium/Source/')
+      'cesium': path.resolve(__dirname, '../node_modules/cesium/Source/'),
+      'jquery': 'jquery'
     }
   },
   module: {
@@ -81,12 +83,12 @@ module.exports = {
     ]
   },
   plugins: [
-    // new webpack.ProvidePlugin({
-    //   $: "jquery",
-    //   jQuery: "jquery",
-    //   jquery: "jquery",
-    //   "window.jQuery": "jquery"
-    // })
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery",
+      jquery: "jquery",
+      "window.jQuery": "jquery"
+    })
   ],
   node: {
     // prevent webpack from injecting useless setImmediate polyfill because Vue
