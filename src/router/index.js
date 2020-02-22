@@ -29,6 +29,11 @@ export default new Router({
       component: () => import('@/views/Terrian/Terrian')
     },
     {
+      path: '/camera',
+      name: 'Camera',
+      component: () => import('@/views/Camera/Camera')
+    },
+    {
       path: '/gltf',
       name: 'Gltf',
       component: () => import('@/views/Gltf/Gltf')

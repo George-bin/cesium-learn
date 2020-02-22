@@ -34,6 +34,10 @@ export default {
           label: '地形图层'
         },
         {
+          path: '/camera',
+          label: '相机'
+        },
+        {
           path: '/gltf',
           label: 'gltf裁切'
         },
