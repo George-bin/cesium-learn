@@ -13,3 +13,28 @@ legend { color:#000; }
 fieldset, img { border:0; }
 button, input, select, textarea { font-size:100%; }
 table { border-collapse:collapse; border-spacing:0; }
+
+.cesium-select {
+  display: inline-block;
+  position: relative;
+  height: 28px;
+  background: #303336;
+  border: 1px solid #444;
+  color: #edffff;
+  fill: #edffff;
+  border-radius: 4px;
+  padding: 5px 12px;
+  margin: 2px 3px;
+  font-size: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  outline: none;
+}
+.cesium-select option {
+  background-color: #000;
+  color: #eee;
+}

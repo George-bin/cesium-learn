@@ -34,6 +34,11 @@ export default new Router({
       component: () => import('@/views/Camera/Camera')
     },
     {
+      path: '/loadModel',
+      name: 'LoadModel',
+      component: () => import('@/views/LoadModel/LoadModel')
+    },
+    {
       path: '/gltf',
       name: 'Gltf',
       component: () => import('@/views/Gltf/Gltf')
@@ -42,6 +47,21 @@ export default new Router({
       path: '/geometry',
       name: 'Geometry',
       component: () => import('@/views/Geometry/Geometry')
+    },
+    {
+      path: '/3dModels',
+      name: '3DModels',
+      component: () => import('@/views/3DModels/3DModels')
+    },
+    {
+      path: '/clock',
+      name: 'Clock',
+      component: () => import('@/views/Clock/Clock')
+    },
+    {
+      path: '/selectionIndicator',
+      name: 'SelectionIndicator',
+      component: () => import('@/views/SelectionIndicator/SelectionIndicator')
     },
     {
       path: '/echarts',

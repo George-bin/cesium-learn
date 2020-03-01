@@ -38,6 +38,22 @@ export default {
           label: '相机'
         },
         {
+          path: '/loadModel',
+          label: '加载模型'
+        },
+        {
+          path: '/3dModels',
+          label: '3D模型'
+        },
+        {
+          path: '/clock',
+          label: 'Clock'
+        },
+        {
+          path: '/selectionIndicator',
+          label: 'SelectionIndicator'
+        },
+        {
           path: '/gltf',
           label: 'gltf裁切'
         },
