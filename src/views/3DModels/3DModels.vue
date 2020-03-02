@@ -22,13 +22,84 @@
           >{{layer.label}}</span>
         </p>
       </div>
-      <!-- 控制模型显示 -->
-      <select
-        v-model="activeModel"
-        class="select-model cesium-select"
-        @change="handleChangeSelectModel">
-        <option v-for="(item, index) in modelList" :key="index" :value="item.value">{{item.label}}</option>
-      </select>
+      <div class="model-control">
+        <!-- 控制模型显示 -->
+        <div class="model-control-item select-model">
+          <p class="label">Model</p>
+          <select
+            v-model="activeModel"
+            class="cesium-select"
+            @change="handleChangeSelectModel">
+            <option v-for="(item, index) in modelList" :key="index" :value="item.value">{{item.label}}</option>
+          </select>
+        </div>
+        <h3 style="padding: 6px 0;">Model Color</h3>
+        <!-- 控制模型颜色 -->
+        <div class="model-control-item select-model-color">
+          <p class="label">Color</p>
+          <select
+            v-model="activeColor"
+            class="cesium-select"
+            @change="handleChangeSelectModelColor">
+            <option v-for="(item, index) in modelColorArr" :key="index" :value="item">{{item}}</option>
+          </select>
+        </div>
+        <!-- 控制模型颜色透明度 -->
+        <div class="model-control-item select-model-color">
+          <p class="label">Alpha</p>
+          <input
+            v-model="activeAlpha"
+            type="range"
+            :step="0.01"
+            :min="0"
+            :max="1"
+            @input="handleChangeModelAlpha" />
+        </div>
+        <!-- 控制模型与颜色的混合模式 -->
+        <div class="model-control-item select-model-mode">
+          <p class="label">Mode</p>
+          <select
+            v-model="activeColorBlendMode"
+            class="cesium-select"
+            @change="handleChangeSelectModelMode">
+            <option v-for="(item, index) in colorBlendModeArr" :key="index" :value="item">{{item}}</option>
+          </select>
+        </div>
+        <!-- 控制模型颜色混合的强度 -->
+        <div class="model-control-item select-model-color">
+          <p class="label">Mix</p>
+          <input
+            v-model="activeColorBlendAmount"
+            :disabled="activeColorBlendMode !== 'Mix'"
+            type="range"
+            :step="0.01"
+            :min="0"
+            :max="1"
+            @input="handleChangeModelColorBlendAmount" />
+        </div>
+        <h3 style="padding: 6px 0;">Model Silhouette</h3>
+        <!-- 控制模型轮廓颜色 -->
+        <div class="model-control-item select-model-silhouette-color">
+          <p class="label">Color</p>
+          <select
+            v-model="activeSilhouetteColor"
+            class="cesium-select"
+            @change="handleChangeSelectModelSilhouetteColor">
+            <option v-for="(item, index) in silhouetteColorArr" :key="index" :value="item">{{item}}</option>
+          </select>
+        </div>
+        <!-- 控制模型轮廓的大小 -->
+        <div class="model-control-item select-model-color">
+          <p class="label">Size</p>
+          <input
+            v-model="activeSilhouetteSize"
+            type="range"
+            :step="0.05"
+            :min="0"
+            :max="3"
+            @input="handleChangeModelSilhouetteSize" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -88,7 +159,16 @@ export default {
           label: '汽车2',
           value: "Draco Compressed Model"
         }
-      ]
+      ],
+      modelColorArr: ['White', 'Red', 'Green', 'Blue', 'Yellow', 'Gray'],
+      activeColor: 'White',
+      colorBlendModeArr: ['Highlight', 'Replace', 'Mix'],
+      activeColorBlendMode: 'Highlight',
+      activeColorBlendAmount: 0.5,
+      activeAlpha: 1,
+      activeSilhouetteColor : 'White',
+      silhouetteColorArr : ['White', 'Red', 'Green', 'Blue', 'Yellow', 'Gray'],
+      activeSilhouetteSize : 1.0
     };
   },
   computed: {},
@@ -199,7 +279,12 @@ export default {
         console.log("选中元素", entity);
         if (entity) {
           activeEntity = entity;
-          self.activeMaterial = activeEntity.materialType;
+          self.activeColor = activeEntity.colorValue;
+          self.activeAlpha = activeEntity.alphaValue;
+          self.activeColorBlendMode = activeEntity.modeValue;
+          self.activeColorBlendAmount = activeEntity.mixValue;
+          self.activeSilhouetteColor = activeEntity.silhouetteColorValue;
+          self.activeSilhouetteSize = activeEntity.silhouetteSizeValue;
         } else {
           activeEntity = null;
         }
@@ -365,10 +450,68 @@ export default {
         model: {
           uri: url,
           minimumPixelSize: 128,
-          maximumScale: 20000
+          maximumScale: 20000,
+          color: Cesium.Color.WHITE.withAlpha(1),
+          colorBlendMode: Cesium.ColorBlendMode.HIGHLIGHT,
+          silhouetteColor: Cesium.Color.WHITE,
+          silhouetteSize: 1.0
         }
       });
+      entity.colorValue = 'White';
+      entity.alphaValue = 1;
+      entity.modeValue = 'Highlight';
+      entity.mixValue = 0.5;
+      entity.silhouetteColorValue = 'White';
       viewer.trackedEntity = entity;
+    },
+    // 选择模型颜色
+    handleChangeSelectModelColor(val) {
+      console.log('模型颜色设置为:', val.target.value)
+      if (!activeEntity) return;
+      let color = val.target.value;
+      activeEntity.colorValue = color;
+      activeEntity.model.color = Cesium.Color[color.toUpperCase()];
+    },
+    // 选择模型与颜色的混合模式
+    handleChangeSelectModelMode(event) {
+      console.log('当前模型的颜色混合模式:', event.target.value);
+      if (!activeEntity) return;
+      let mode = event.target.value;
+      activeEntity.modeValue = mode;
+      activeEntity.model.colorBlendMode = Cesium.ColorBlendMode[mode.toUpperCase()];
+    },
+    // 设置模型颜色透明度
+    handleChangeModelAlpha(event) {
+      console.log('当前模型透明度', event.target.value)
+      if (!activeEntity) return;
+      let alpha = event.target.value;
+      let color = Cesium.Color[this.activeColor.toUpperCase()];
+      activeEntity.alphaValue = parseFloat(alpha);
+      activeEntity.model.color = Cesium.Color.fromAlpha(color, parseFloat(alpha));
+    },
+    // 模型颜色混合的强度
+    handleChangeModelColorBlendAmount(event) {
+      console.log('颜色混合的强度:', event.target.value);
+      if (!activeEntity) return;
+      let mix = parseFloat(event.target.value);
+      activeEntity.mixValue = mix;
+      activeEntity.model.colorBlendAmount = mix;
+    },
+    // 控制模型轮廓颜色
+    handleChangeSelectModelSilhouetteColor(event) {
+      console.log('模型轮廓颜色:', event.target.value);
+      if (!activeEntity) return;
+      let color = event.target.value;
+      activeEntity.silhouetteColorValue = color;
+      activeEntity.model.silhouetteColor = Cesium.Color[color.toUpperCase()]
+    },
+    // 控制模型轮廓大小
+    handleChangeModelSilhouetteSize(event) {
+      console.log('轮廓大小:', event.target.value);
+      if (!activeEntity) return;
+      let size = parseFloat(event.target.value);
+      activeEntity.silhouetteSizeValue = size;
+      activeEntity.model.silhouetteSize = size;
     }
   }
 };
@@ -380,6 +523,7 @@ export default {
     position: fixed;
     top: 8px;
     left: 8px;
+    width: 240px;
     // 影像图层管理
     .layer-manage {
       padding: 10px;
@@ -411,9 +555,32 @@ export default {
         }
       }
     }
-    .select-model {
-      width: 100%;
-      margin: 5px 0 0 0;
+    // 模型控制
+    .model-control {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 12px;
+      color: white;
+      background: rgba(68, 68, 68, 0.4);
+      border-radius: 4px;
+      select {
+        width: 100%;
+        margin: 0;
+      }
+      .model-control-item {
+        display: flex;
+        align-items: center;
+        .label {
+          width: 50px;
+        }
+        select,
+        input {
+          flex: 1;
+        }
+      }
+      .model-control-item + .model-control-item {
+        margin-top: 10px;
+      }
     }
   }
 }

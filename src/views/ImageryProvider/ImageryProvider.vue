@@ -236,6 +236,7 @@ export default {
         //   minimumLevel: 3
         // })
       });
+      window.camera = viewer.camera;
       // 去除版权信息
       window.viewer._cesiumWidget._creditContainer.style.display = "none";
       // 显示桢速
