@@ -20,7 +20,6 @@
 
 <script>
 let Cesium = null;
-import { gis } from "@/config/";
 // import CesiumNavigation from "cesium-navigation-es6";
 export default {
   name: "HelloWorld",
@@ -537,10 +536,10 @@ export default {
       if (process.env.NODE_ENV === "production") {
         imagePath = "gis/";
       }
-      // let url = '../../../' + gis.host + 'static/3dmodel/' + name + '-d.gltf';
+      // let url = '../../../' + process.env.GIS_HOST + 'static/3dmodel/' + name + '-d.gltf';
       let url =
         "../../../" +
-        gis.host +
+        process.env.GIS_HOST.host +
         imagePath +
         "static/3dmodel/" +
         name +
@@ -617,10 +616,10 @@ export default {
       if (process.env.NODE_ENV === "production") {
         imagePath = "gis/";
       }
-      // let url = '../../../' + gis.host + 'static/3dmodel/' + name + '-d.gltf';
+      // let url = '../../../' + process.env.GIS_HOST + 'static/3dmodel/' + name + '-d.gltf';
       let url =
         "../../../" +
-        gis.host +
+        process.env.GIS_HOST +
         imagePath +
         "static/3dmodel/" +
         name +

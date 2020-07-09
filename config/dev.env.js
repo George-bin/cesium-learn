@@ -8,5 +8,6 @@ module.exports = merge(prodEnv, {
   _3D_ADDRESS: '"http://47.95.129.34:9002/3dview/3d.html"',
   BASE_API: '"http://localhost/dps"',
   // BASE_API: '"http://47.95.129.34:9002/dps"',
+  GIS_HOST: '""'
 })
 
