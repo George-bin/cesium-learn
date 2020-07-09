@@ -11,7 +11,8 @@ export default new Router({
       path: '/',
       // redirect: '/echarts'
       name: 'Home',
-      component: Home
+      component: () => import('@/views/China/China')
+      // component: Home
     },
     {
       path: '/introduction',

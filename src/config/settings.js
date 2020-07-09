@@ -8,7 +8,9 @@
  */
 const gis = {
   // host: 'gis/'// 编译环境
-  host: ''// 开发环境
+  host: '', // 开发环境
+  nginxFilePath: 'http://192.168.1.102/gis2/'
+  // nginxFilePath: 'http://localhost:9002/file/'
 }
 
 export { gis }

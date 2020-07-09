@@ -2,10 +2,12 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
+import store from './store'
 import router from './router'
 // 引入cesium样式文件
 import * as Cesium from 'cesium/Cesium'
 import 'cesium/Widgets/widgets.css'
+import '../static/css/iconfont/iconfont.css'
 Vue.prototype.$Cesium = Cesium
 window.Cesium = Cesium
 // ion账户提供一个token去访问Bing影像底图
@@ -27,6 +29,7 @@ Vue.config.productionTip = false
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
+  store,
   router,
   components: { App },
   template: '<App/>'
