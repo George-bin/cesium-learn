@@ -1283,6 +1283,7 @@ export default {
         };
       });
     },
+
     getInitCamera(movement) {
       //得到当前三维场景
       var scene = viewer.scene;
@@ -1319,6 +1320,7 @@ export default {
         this.SET_INIT_CAMERA_HEIGHT(this.initCameraData);
       }
     },
+
     // 监听绘制鼠标事件
     onDrawMouseEvent() {
       // 处理用户输入事件

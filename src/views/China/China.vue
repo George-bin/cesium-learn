@@ -12,13 +12,13 @@
         'toolbars-section-mobile': isMobile && openMobileAside
       }"
       @click="handleClickMobileAside(false)">
-      <div class="toolbars-section-box" @click.stop="">
+      <div class="toolbars-section-box">
         <!--获取指定时间的数据-->
-        <div class="toolbars-item">
+        <div class="toolbars-item" @click.stop="">
           <h3 class="toolbars-item-title">选择指定时间的数据</h3>
           <div style="margin-top: 5px">
             <el-date-picker
-              v-model="selectedData"
+              v-model="selectedDate"
               :picker-options="startDateChecked"
               :clearable="true"
               :editable="true"
@@ -28,7 +28,7 @@
               size="small"
               type="date"
               placeholder="选择日期"
-              @change="selectedDataChange"
+              @change="onSelectedDateChange"
             /><br>
             <el-time-select
               v-model="selectedTime"
@@ -40,16 +40,16 @@
               style="width:130px; margin-top: 5px"
               size="small"
               placeholder="选择时间"
-              @change="selectedDataChange"
+              @change="onSelectedDateChange"
             />
           </div>
         </div>
         <!--切换地图背景-->
-        <div class="toolbars-item">
+        <div class="toolbars-item" @click.stop="">
           <h3 class="toolbars-item-title">地图模式切换</h3>
           <div class="toolbars-item-content">
             <div class="son-item">
-              <div class="content" @click="exitTwoDimension">
+              <div class="content" @click="handleExitMouseDrawEvent">
                 <span title="白天" @click="handleSwitchMap('white')">
                   <i
                     :style="{color: mapModel === 'white' ? '#ffc633' : 'white'}"
@@ -70,25 +70,25 @@
           </div>
         </div>
         <!--辅助背景云图-->
-        <!-- @click="exitTwoDimension" -->
-        <div class="auxiliary-line-section toolbars-item">
+        <!-- @click="handleExitMouseDrawEvent" -->
+        <div v-if="isSource" class="auxiliary-line-section toolbars-item"  @click.stop="">
           <h3 class="toolbars-item-title">气象数据</h3>
           <div class="toolbars-item-content">
             <div class="son-item">
               <div class="content">
-                <span title="经纬度" @click="handleSwitchCloudChart('grid')">
+                <span title="经纬度" @click="handleSwitchAssistCloudChart('grid')">
                   <i
                     :style="{color: useBaseMap === 'grid' ? '#ffc633' : 'white'}"
                     class="iconfont icon-wanggediqiu"
                   />
                 </span>
-                <span title="无经纬度" @click="handleSwitchCloudChart('noGrid')">
+                <span title="无经纬度" @click="handleSwitchAssistCloudChart('noGrid')">
                   <i
                     :style="{color: useBaseMap === 'noGrid' ? '#ffc633' : 'white'}"
                     class="iconfont icon-iconset0403"
                   />
                 </span>
-                <span title="隐藏图层" @click="hiddenImage()">
+                <span title="隐藏图层" @click="handleHiddenAssistCloudChart()">
                   <i
                     :style="{color: !useBaseMap ? '#ffc633' : 'white'}"
                     class="iconfont icon-dituleiwanggequ"
@@ -99,13 +99,13 @@
           </div>
         </div>
         <!--二维分析-->
-        <div class="toolbars-item two-dimension">
+        <div v-if="isSource" class="toolbars-item two-dimension">
           <h2 class="toolbars-item-title">二维气象分析</h2>
           <div class="toolbars-item-content">
             <!--绘制坐标系-->
             <div class="draw-section son-item">
               <div class="content">
-                <span title="绘制十字" @click="handleDrawCoordinateSystem">
+                <span title="绘制十字" @click="handleStartDraw2DCoordinateSystem">
                   <i
                     :style="{color: isDrawCoordinateSystem ? '#ffc633' : 'white'}"
                     class="iconfont icon-jiaochacross19"
@@ -115,7 +115,7 @@
                   <i
                     :style="{
                       color: animationStatus === 'starting' ? '#ffc633' : 'white',
-                      cursor: coordinateSystemDatasource && !this.isLocalAnalysis ? 'pointer' : 'no-drop'
+                      cursor: coordinateSystemDatasource ? 'pointer' : 'no-drop'
                     }"
                     class="iconfont icon-kaishi"
                   />
@@ -124,7 +124,7 @@
                   <i
                     :style="{
                       color: animationStatus === 'stop' ? '#ffc633' : 'white',
-                      cursor: coordinateSystemDatasource && !this.isLocalAnalysis ? 'pointer' : 'no-drop'
+                      cursor: coordinateSystemDatasource ? 'pointer' : 'no-drop'
                     }"
                     class="iconfont icon-zanting"
                   />
@@ -132,7 +132,7 @@
                 <span title="重新播放" @click="restRealtimeViewModel">
                   <i
                     :style="{
-                      cursor: coordinateSystemDatasource && !this.isLocalAnalysis ? 'pointer' : 'no-drop'
+                      cursor: coordinateSystemDatasource ? 'pointer' : 'no-drop'
                     }"
                     class="iconfont icon-zhongbo"
                   />
@@ -142,7 +142,7 @@
           </div>
         </div>
         <!--三维分析-->
-        <div class="toolbars-item three-dimension">
+        <div v-if="isSource" class="toolbars-item three-dimension">
           <h2 class="toolbars-item-title">三维气象分析</h2>
           <div class="toolbars-item-content">
             <!--绘制坐标系-->
@@ -158,7 +158,7 @@
                   <i
                     :style="{
                       color: isShowCoverage ? '#ffc633' : 'white',
-                      cursor: d3CoordinateSystemDatasource && !isLocalAnalysis ? 'pointer' : 'no-drop'
+                      cursor: threeDCoordSystemDatasource ? 'pointer' : 'no-drop'
                     }"
                     class="iconfont icon-yincangshijuangailan"
                   />
@@ -168,7 +168,7 @@
           </div>
         </div>
         <!--切面分析-->
-        <div v-if="!isMobile" class="clude-section toolbars-item">
+        <div v-if="!isMobile && isSource" class="clude-section toolbars-item">
           <h3 class="toolbars-item-title">切面分析</h3>
           <div class="toolbars-item-content">
             <div class="son-item">
@@ -193,7 +193,7 @@
           </div>
         </div>
         <!--移动云图-->
-        <div class="clude-section toolbars-item">
+        <div v-if="isSource" class="clude-section toolbars-item">
           <h3 class="toolbars-item-title">移动云图</h3>
           <div class="toolbars-item-content">
             <div class="son-item">
@@ -209,7 +209,7 @@
           </div>
         </div>
         <!--多层立体-->
-        <div class="clude-section toolbars-item">
+        <div v-if="isSource" class="clude-section toolbars-item">
           <h3 class="toolbars-item-title">3D模型</h3>
           <div class="toolbars-item-content">
             <div class="son-item">
@@ -241,25 +241,30 @@
 
 // import * as Cesium from 'Cesium'
 // import 'cesium/Widgets/widgets.css'
-import { removeMoveImage, drawMoveImage, moveImage } from '@/utils/moveImage'
-import { removeLevel, showLevel, drawImageLevel } from '@/utils/imageLevel'
-import { gis } from '@/config/'
+// import { removeMoveImage, handleDrawMoveImage, moveImage } from '@/utils/moveImage'
+// import { removeLevel, showLevel, drawImageLevel } from '@/utils/imageLevel'
 import { mapState, mapActions, mapMutations } from 'vuex'
+import { getScreenCenterCoord, coordMatrixingPX, mapScaling, spaceCoordToLng } from '@/utils/share'
 
 window.viewer = null
+let moveCloudTimer // 移动云图定时器
+// 绘制鼠标事件对象
+let mouseDrawEventHandler = null
+// 普通鼠标事件对象
+let mouseEventHandler = null
 export default {
-  components: {
-    twoDimension: () => import('@/components/twoDimension')
-  },
+  components: {},
   data() {
     return {
+      // 该时间段是否存在资源
+      isSource: false,
+      // 移动端打开侧边栏
       openMobileAside: false,
-      selectedTime: '',
-      selectedData: '',
-      dataTime: '',
+      selectedTime: '11:30',
+      selectedDate: '2020-06-14',
+      dateTime: '20200614_113000',
       // 当前功能模块
       activeModule: 'twoDimension',
-      initViewerComplete: false,
       screenHeight: '',
       // ngint: 黑色、white: 白色、weixing: 卫星
       mapModel: 'night',
@@ -283,12 +288,6 @@ export default {
         a: {},
         b: {}
       },
-      // 坐标系datasource
-      coordinateSystemDatasource: null,
-      // 三维分析坐标系datasource
-      d3CoordinateSystemDatasource: null,
-      // 动画面板
-      animationPolygonDatasource: null,
       // 执行时间
       executeSeconds: 0,
       // stop: 停止 starting: 播放中
@@ -302,10 +301,6 @@ export default {
       activeLengthwaysCoor: [],
       // 当前横向面板坐标
       activeCrosswiseCoor: [],
-      // 绘制鼠标事件对象
-      mouseDrawEventHandler: null,
-      // 鼠标事件对象
-      mouseEventHandler: null,
       // 是否截取剖面
       isCutout: false,
       // 是否绘制坐标系
@@ -314,7 +309,6 @@ export default {
       isDraw3DCoordinateSystem: false,
       // 截取的坐标
       cutoutPosition: [],
-      cutoutPolygonDatasource: null,
       // 当前选定实体集合
       activeEntityCollection: null,
       // 实时坐标
@@ -323,35 +317,39 @@ export default {
         lat: '',
         alt: ''
       },
-      // canvas中的图片地址
-      canvasImgSrc: '',
       fullTimer: false,
       showImage: false,
       isShowCoverage: false,
-      intervalInfo: '',
-      // 白天模式
-      daytimeMode: false,
+      // 图层坐标
+      drawCoverageCoordinate: null,
+      // 材质数组
+      cutoutWallMaterialArr: [],
       // 加载云图
       useBaseMap: 'noGrid',
-      // 移动云图
-      isMoveCloud: false,
-      // 局部分析
-      isLocalAnalysis: false,
       currentCenterHeight: null,
       currentCenterLat: null,
       currentCenterLng: null,
+      // 相机视角
       initCameraData: {},
-      recordCamera: false,
-      startDateChecked: this.beginDate()
+      cameraAngle: {},
+      startDateChecked: this.initSelectDate(),
+      // datasource
+      coordinateSystemDatasource: null, // 二维坐标系
+      threeDCoordSystemDatasource: null, // 三维分析坐标系
+      animationPolygonDatasource: null, // 动画面板
+      cutoutPolygonDatasource: null, // 切面
+      coverageDatasource: null, // 图层
     }
   },
   computed: {
     ...mapState({
-      isMobile: state => state.share.isMobile
+      isMobile: state => state.share.isMobile,
+      getInitCameraData: state => state.cesium.getInitCameraData
     }),
-    getInitCameraData() {
-      // 获取store中的数据
-      return this.$store.state.cesium.getInitCameraData
+    // 基本图片地址
+    imgBaseUrl () {
+      return process.env.NGINX_PATH + this.dateTime
+      // return this.isMobile ?  process.env.NGINX_PATH + this.dateTime + '/mobile' :  process.env.NGINX_PATH + this.dateTime + '/pc'
     }
   },
   watch: {
@@ -377,7 +375,6 @@ export default {
   mounted() {
     this.init()
     this.SET_INIT_CAMERA_HEIGHT(null)
-    this.initViewerComplete = true
     const that = this
     window.onresize = () => {
       return (() => {
@@ -386,38 +383,186 @@ export default {
       })()
     }
     this.onMouseEvent()
-
-    // setInterval(() => {
-    //     console.log(viewer.camera)
-    // }, 1000)
+    // 隐藏
     if (this.isMobile) {
       $('.cesium-viewer-geocoderContainer')
         .css({ display: 'none' })
     }
   },
   methods: {
-    ...mapActions(["GetLineData"]),
-    ...mapMutations(["SET_INIT_CAMERA_HEIGHT"]),
+    ...mapActions(['GetLineData', 'ValidateImg']),
+    ...mapMutations(['SET_INIT_CAMERA_HEIGHT']),
+    init() {
+      // home定位到中国范围
+      // Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(40, 22, 70, 50)
+
+      // 设置静态资源目录
+      // buildModuleUrl.setBaseUrl('../../../static/Cesium/')
+      // Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiZGI5MmJjZS05N2VhLTQ4MTEtYmU5Ni1iNDRkMGRlZmVjMzkiLCJpZCI6MTg4NDIsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzQ0OTg3Mjl9.o6NVGjAHEOP5oyqTldLeaXf-pwPelcwNniBf8ZsxBow';
+      // 单击显示点位坐标信息
+      const that = this
+      // eslint-disable-next-line no-undef
+      viewer = new Cesium.Viewer('china', {
+        infoBox: false,
+        shouldAnimate: false, // 让场景中的动画自动播放
+        navigationHelpButton: false, // 是否显示帮助信息控件
+        animation: false, // 不创建动画控件
+        scene3DOnly: true, // 每个几何实例仅以3D渲染以节省GPU内存
+        timeline: false, // 不创建时间线控件
+        sceneModePicker: false,
+        baseLayerPicker: false,
+        // fullscreenButton: true, // 是否显示全屏按钮
+        // imageryProvider : Cesium.createOpenStreetMapImageryProvider({url : this.mapType}),
+        imageryProvider: new Cesium.UrlTemplateImageryProvider({
+          url: this.mapType
+        })
+      })
+
+      // 去除版权信息
+      // eslint-disable-next-line no-undef
+      viewer._cesiumWidget._creditContainer.style.display = 'none'
+      // 禁止相机地形穿透
+      // this.cameraStop()
+      // this.setTooltip()
+      /* 三维球转动添加监听事件 */
+      // eslint-disable-next-line no-undef
+      viewer.camera.changed.addEventListener(function(percentage) {
+        const currentPosition = that.getCenterPosition()
+        // 打印中心点坐标、高度、当前范围坐标
+        that.currentCenterHeight = currentPosition.height
+        that.currentCenterLat = currentPosition.lat
+        that.currentCenterLng = currentPosition.lon
+        // console.log("当前中心点坐标高度======", currentPosition.height);
+        // console.log("当前中心点坐标经纬度======", currentPosition.lat, "   ", currentPosition.lon);
+      })
+      /* eslint-disable */
+      // 初始化的时候获取数据日期
+      if (sessionStorage.getItem('dateTime')) {
+        this.dateTime = sessionStorage.getItem('dateTime')
+        this.selectedDate = sessionStorage.getItem('selectedDate')
+        this.selectedTime = sessionStorage.getItem('selectedTime')
+        this.handleValidateImgSrouce(`${this.imgBaseUrl}/z.png`)
+          .then(() => {
+            this.handleDrawMoveImage()
+            this.handleDrawNormalImage()
+          })
+      }
+      // 绘制移动云图
+      // setTimeout(() => {
+      //   this.handleDrawMoveImage()
+      //   // 绘制多层云图
+      //   for (let i = 0; i <= 20; i++) {
+      //     drawImageLevel(viewer, i)
+      //   }
+      // }, 5000)
+      // eslint-disable-next-line no-undef
+      viewer.clock.onStop.addEventListener(clock => {
+        if (process.env.NODE_ENV === 'development') console.log('动画停止啦')
+        viewer.clock.shouldAnimate = false
+        clearInterval(this.timer)
+      })
+
+      // 点击home键进行跳转
+      // eslint-disable-next-line no-undef
+      viewer.homeButton.viewModel.command.beforeExecute.addEventListener(
+        function(e) {
+          e.cancel = true
+          // 你要飞的位置
+          that.flytoPosition()
+        }
+      )
+
+      setTimeout(() => {
+        this.flytoPosition()
+      }, 2000)
+    },
+
+    /**
+     * 验证资源有效性
+     */
+    handleValidateImgSrouce (imgSrc) {
+      return new Promise((resolve, reject) => {
+        this.ValidateImg(imgSrc)
+          .then(() => {
+            this.isSource = true
+            resolve()
+          })
+          .catch(err => {
+            this.isSource = false
+            this.handleRemoveAssistCloudChart()
+            this.handleRestoreCesiumInitConfig()
+            console.error('无效的资源', err)
+            this.$message({
+              type: 'warning',
+              message: '该时间段无点云数据!'
+            })
+            reject(err)
+          })
+      })
+    },
+
+    /**
+     * 监听选择时间改变
+     */
+    onSelectedDateChange () {
+      if (this.selectedDate && this.selectedTime) {
+        this.dateTime =
+          this.selectedDate.replace(/-/g, '') + '_' + this.selectedTime.replace(':', '') + '00'
+        sessionStorage.setItem('dateTime', this.dateTime)
+        sessionStorage.setItem('selectedDate', this.selectedDate)
+        sessionStorage.setItem('selectedTime', this.selectedTime)
+        this.handleValidateImgSrouce(`${this.imgBaseUrl}/z.png`)
+          .then(() => {
+            location.reload()
+          })
+      } else {
+        this.dateTime = ''
+      }
+      // console.log('onSelectedDateChange===========', this.dateTime)
+    },
+
+    /**
+     * 绘制全国辅助云图
+     */
+    handleDrawNormalImage () {
+      if (!this.dateTime) return
+      // 全国-带网格
+      viewer.entities.add({
+        id: 'chinaGrid',
+        show: false,
+        rectangle: {
+          coordinates: Cesium.Rectangle.fromDegrees(73, 12.2, 135, 54.2),
+          height: 0,
+          material: new Cesium.ImageMaterialProperty({
+            image: this.imgBaseUrl + '/grid.png',
+            transparent: true // 是否透明
+          })
+        }
+      })
+      // 全国-不带网格
+      viewer.entities.add({
+        id: 'china',
+        show: true,
+        rectangle: {
+          coordinates: Cesium.Rectangle.fromDegrees(73, 12.2, 135, 54.2),
+          height: 0,
+          material: new Cesium.ImageMaterialProperty({
+            image: this.imgBaseUrl + '/z.png',
+            transparent: true, // 是否透明
+            // color: Cesium.Color.ALICEBLUE.withAlpha(0)
+          })
+        }
+      })
+    },
+
     /**
      * 打开移动端侧边栏
      */
     handleClickMobileAside (boolean) {
       this.openMobileAside = boolean
     },
-    selectedDataChange() {
-      if (this.selectedData && this.selectedTime) {
-        this.dataTime =
-          this.selectedData.replace(/-/g, '') + '_' + this.selectedTime.replace(':', '') + '00'
-        sessionStorage.setItem('dataTime', this.dataTime)
-        sessionStorage.setItem('selectedData', this.selectedData)
-        sessionStorage.setItem('selectedTime', this.selectedTime)
-        location.reload()
-      } else {
-        this.dataTime = ''
-      }
-      console.log('selectedDataChange===========', this.dataTime)
-    },
-    beginDate() {
+
+    initSelectDate() {
       // 提出开始时间必须小于今天
       // const self = this
       return {
@@ -427,108 +572,11 @@ export default {
         }
       }
     },
-    // 隐藏全国云图
-    handleHideBaseMap() {
-      this.hiddenImage()
-    },
-    // 选择二维分析图
-    handleSwitchTwoDimension() {
-      this.activeModule = 'twoDimension'
-      // eslint-disable-next-line no-undef
-      viewer.dataSources.removeAll()
-      this.animationStatus = ''
-      this.isDrawCoordinateSystem = false
-      this.isLocalAnalysis = false
-      this.isShowCoverage = false
-      this.isCutout = false
-      this.coordinateSystemDatasource = null
-      this.activeEntityCollection = null
-      // eslint-disable-next-line no-undef
-      removeLevel(viewer, this.showImage)
-      // eslint-disable-next-line no-undef
-      removeMoveImage(viewer)
-    },
-    // 3D展示
-    handleGo3D() {
-      window.open(process.env._3D_ADDRESS)
-      // window.open('http://localhost/cesium+three/3d.html')
-      // this.$router.push('/china3d')
-    },
-    // 退出二维分析
-    exitTwoDimension() {
-      this.$refs.twoDimension.$emit('handleCancelDraw')
-      // eslint-disable-next-line no-undef
-      viewer.dataSources.removeAll()
-      this.animationStatus = ''
-      this.isDrawCoordinateSystem = false
-      this.isLocalAnalysis = false
-      this.isShowCoverage = false
-      this.isCutout = false
-      this.coordinateSystemDatasource = null
-      this.activeEntityCollection = null
-      // eslint-disable-next-line no-undef
-      removeLevel(viewer, this.showImage)
-      // eslint-disable-next-line no-undef
-      removeMoveImage(viewer)
-    },
-    hiddenImage() {
-      this.useBaseMap = ''
-      /* eslint-disable */
-      const chinaGridEntity = viewer.entities.getById('chinaGrid')
-      const china = viewer.entities.getById('china')
-      /* eslint-enable */
-      chinaGridEntity.show = false
-      china.show = false
-    },
-    // 显示立体图层
-    showLevelInfo() {
-      this.activeModule = '3DCloud'
-      this.hiddenImage()
-      this.exitTwoDimension()
-      /* eslint-disable */
-      removeMoveImage(viewer)
-      showLevel(viewer)
-      if (viewer.entities.getById(`3d-map-0`)) {
-        showLevel(viewer)
-      } else {
-        for (let i = 0; i <= 19; i++) {
-          setTimeout(() => {
-            drawImageLevel(viewer, i)
-          }, 1000 * i)
-        }
-      }
-      /* eslint-enable */
-    },
-    handleSwitchCloudChart(type) {
-      // if(this.dataTime===""){
-      //   this.$message.warning("请选择指定时间的数据")
-      //   return;
-      // }
-      if (this.useBaseMap === type) return
-      this.useBaseMap = type
-      /* eslint-disable */
-      const chinaGridEntity = viewer.entities.getById('chinaGrid')
-      const china = viewer.entities.getById('china')
-      /* eslint-enable */
-      // viewer.entities.remove(chinaGridEntity)
-      // viewer.entities.remove(china)
-      if (type === 'grid') {
-        // 全国地图带网格
-        chinaGridEntity.show = true
-        china.show = false
-      } else {
-        // 全国地图不带网格
-        chinaGridEntity.show = false
-        china.show = true
-      }
-    },
-    setTooltip() {
-      /* eslint-disable */
-      viewer.homeButton.viewModel.tooltip = '初始位置'
-      viewer.fullscreenButton.viewModel.tooltip = '全屏显示'
-      /* eslint-enable */
-    },
-    // 切换白天和黑夜地图
+
+    /**
+     * 切换地图模式
+     * @params type: 地图模式
+     */
     handleSwitchMap(type) {
       this.mapModel = type
       switch (type) {
@@ -561,117 +609,415 @@ export default {
       // viewer.terrainProvider = Cesium.createWorldTerrain()
       // viewer.scene.globe.enableLighting = true
     },
-    init() {
-      // home定位到中国范围
-      // Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(40, 22, 70, 50)
 
-      // 设置静态资源目录
-      // buildModuleUrl.setBaseUrl('../../../static/Cesium/')
-      // Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiZGI5MmJjZS05N2VhLTQ4MTEtYmU5Ni1iNDRkMGRlZmVjMzkiLCJpZCI6MTg4NDIsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzQ0OTg3Mjl9.o6NVGjAHEOP5oyqTldLeaXf-pwPelcwNniBf8ZsxBow';
-      // 单击显示点位坐标信息
-      const that = this
+    /**
+     * 退出鼠标绘制事件
+     */ 
+    handleExitMouseDrawEvent () {
+      this.handleCancelDraw()
       // eslint-disable-next-line no-undef
-      viewer = new Cesium.Viewer('china', {
-        infoBox: false,
-        shouldAnimate: false, // 让场景中的动画自动播放
-        navigationHelpButton: false, // 是否显示帮助信息控件
-        animation: false, // 不创建动画控件
-        scene3DOnly: true, // 每个几何实例仅以3D渲染以节省GPU内存
-        timeline: false, // 不创建时间线控件
-        sceneModePicker: false,
-        baseLayerPicker: false,
-        // fullscreenButton: true, // 是否显示全屏按钮
-        // imageryProvider : Cesium.createOpenStreetMapImageryProvider({url : this.mapType}),
-        imageryProvider: new Cesium.UrlTemplateImageryProvider({
-          url: this.mapType
-        })
-      })
+      viewer.dataSources.removeAll()
+      this.animationStatus = ''
+      this.isDrawCoordinateSystem = false
+      this.isShowCoverage = false
+      this.isCutout = false
+      this.coordinateSystemDatasource = null
+      this.activeEntityCollection = null
+      // eslint-disable-next-line no-undef
+      this.removeLevel()
+      // eslint-disable-next-line no-undef
+      this.removeMoveImage()
+    },
 
-      // 去除版权信息
-      // eslint-disable-next-line no-undef
-      viewer._cesiumWidget._creditContainer.style.display = 'none'
-      // 禁止相机地形穿透
-      this.cameraStop()
-      // this._local = new CesiumLocal(viewer)
-      // this.setTooltip()
-      /* 三维球转动添加监听事件 */
-      // eslint-disable-next-line no-undef
-      viewer.camera.changed.addEventListener(function(percentage) {
-        const currentPosition = that.getCenterPosition()
-        // 打印中心点坐标、高度、当前范围坐标
-        that.currentCenterHeight = currentPosition.height
-        that.currentCenterLat = currentPosition.lat
-        that.currentCenterLng = currentPosition.lon
-
-        // console.log("当前中心点坐标高度======", currentPosition.height);
-        // console.log("当前中心点坐标经纬度======", currentPosition.lat, "   ", currentPosition.lon);
-      })
+    /**
+     * 切换辅助云图
+     * @params type: 云图类型
+     */
+    handleSwitchAssistCloudChart (type) {
+      // if(this.dateTime===""){
+      //   this.$message.warning("请选择指定时间的数据")
+      //   return;
+      // }
+      if (this.useBaseMap === type) return
+      this.useBaseMap = type
       /* eslint-disable */
-      // 初始化的时候获取数据日期
-      this.dataTime = sessionStorage.getItem('dataTime')
-      this.selectedData = sessionStorage.getItem('selectedData')
-      this.selectedTime = sessionStorage.getItem('selectedTime')
-      let imgBaseUrl = this.isMobile ?  gis.nginxFilePath + this.dataTime + '/mobile' :  gis.nginxFilePath + this.dataTime + '/pc'
-      console.log(gis.nginxFilePath + this.dataTime + '/grid.png')
-      if (this.dataTime) {
-        // 全国-带网格
-        viewer.entities.add({
-          id: 'chinaGrid',
-          show: false,
-          rectangle: {
-            coordinates: Cesium.Rectangle.fromDegrees(73, 12.2, 135, 54.2),
-            height: 0,
-            material: new Cesium.ImageMaterialProperty({
-              image: imgBaseUrl + '/grid.png',
-              transparent: true // 是否透明
+      const chinaGridEntity = viewer.entities.getById('chinaGrid')
+      const china = viewer.entities.getById('china')
+      /* eslint-enable */
+      // viewer.entities.remove(chinaGridEntity)
+      // viewer.entities.remove(china)
+      if (type === 'grid') {
+        // 全国地图带网格
+        chinaGridEntity.show = true
+        china.show = false
+      } else {
+        // 全国地图不带网格
+        chinaGridEntity.show = false
+        china.show = true
+      }
+    },
+
+    /**
+     * 删除辅助云图
+     */
+    handleRemoveAssistCloudChart () {
+      this.useBaseMap = ''
+      const chinaGridEntity = viewer.entities.getById('chinaGrid')
+      const china = viewer.entities.getById('china')
+      viewer.entities.remove(chinaGridEntity)
+      viewer.entities.remove(china)
+    },
+
+    /**
+     * 隐藏辅助云图
+     */
+    handleHiddenAssistCloudChart () {
+      if (!this.useBaseMap) return
+      this.useBaseMap = ''
+      /* eslint-disable */
+      const chinaGridEntity = viewer.entities.getById('chinaGrid')
+      const china = viewer.entities.getById('china')
+      /* eslint-enable */
+      chinaGridEntity.show = false
+      china.show = false
+    },
+
+    /**
+     * 开始绘制二维坐标系
+     */
+    handleStartDraw2DCoordinateSystem () {
+      if (this.useBaseMap === '') {
+        this.handleSwitchAssistCloudChart('noGrid')
+      }
+      this.isDrawCoordinateSystem = !this.isDrawCoordinateSystem
+      if (this.isDrawCoordinateSystem) {
+        this.handleInitCameraAngle()
+        this.handleRestoreCesiumInitConfig('2d')
+        this.onDrawMouseEvent()
+      } else {
+        this.onMouseEvent()
+      }
+    },
+
+    /**
+     * 初始化相机视角
+     */
+    handleInitCameraAngle () {
+      // 设置镜头位置与方向
+      let coord = getScreenCenterCoord()
+      console.log('初始化相机视角', coord)
+      if (!coord) return
+      const initialPosition = new Cesium.Cartesian3.fromDegrees(coord.lng, coord.lat, coord.height)
+      const homeCameraView = {
+        destination: initialPosition,
+        orientation: {
+          heading: 0,
+          pitch: Cesium.Math.toRadians(-90),
+          roll: 0.0
+        }
+      }
+      // eslint-disable-next-line no-undef
+      viewer.scene.camera.flyTo(homeCameraView)
+    },
+
+    /**
+     * 开始绘制前还原Cesium初始配置
+     * @params type: 将要绘制的类型
+     */
+    handleRestoreCesiumInitConfig (type) {
+      this.activeModule = 'twoDimension'
+      window.clearInterval(moveCloudTimer)
+
+      // 避免鼠标事件冲突 start
+      mouseEventHandler && mouseEventHandler.destroy()
+      mouseEventHandler = null
+      mouseDrawEventHandler && mouseDrawEventHandler.destroy()
+      mouseDrawEventHandler = null
+      // 避免鼠标事件冲突 end
+
+      // eslint-disable-next-line no-undef
+      viewer.dataSources.removeAll()
+      viewer.clock.shouldAnimate = false // 停止动画
+      this.animationStatus = ''
+      if (!type === '2d') this.isDrawCoordinateSystem = false
+      if (!type === '3d') this.isDraw3DCoordinateSystem = false
+      this.isShowCoverage = false
+      this.isCutout = false
+      this.coordinateSystemDatasource = null
+      this.threeDCoordSystemDatasource = null
+      this.animationPolygonDatasource = null
+      this.activeEntityCollection = null
+      this.coverageDatasource = null
+      this.cutoutPolygonDatasource = null
+      // eslint-disable-next-line no-undef
+      this.removeLevel()
+      // eslint-disable-next-line no-undef
+      this.removeMoveImage()
+    },
+
+    /**
+     * 开始播放动画
+     */
+    playRealtimeViewModel () {
+      if (!this.coordinateSystemDatasource) return;
+      clearInterval(this.timer);
+      // 根据当前时间继续前进
+      viewer.clock.tick();
+      // viewer.clock.currentTime = viewer.clock.currentTime;
+      viewer.clock.shouldAnimate = true;
+      // console.log('经度步长', this.lngSpeed)
+      // console.log('纬度步长', this.latSpeed)
+      this.animationStatus = "starting";
+      this.timer = setInterval(() => {
+        this.executeSeconds += 1;
+        this.activeLengthwaysCoor = [
+          [
+            this.lengthwaysPolygon.a.lng - this.lngSpeed * this.executeSeconds,
+            this.lengthwaysPolygon.a.lat
+          ],
+          [
+            this.lengthwaysPolygon.b.lng - this.lngSpeed * this.executeSeconds,
+            this.lengthwaysPolygon.b.lat
+          ]
+        ];
+        this.activeCrosswiseCoor = [
+          [
+            this.crosswisePolygon.a.lng,
+            this.crosswisePolygon.a.lat - this.latSpeed * this.executeSeconds
+          ],
+          [
+            this.crosswisePolygon.b.lng,
+            this.crosswisePolygon.b.lat - this.latSpeed * this.executeSeconds
+          ]
+        ];
+        // console.log('纵向面板坐标:', JSON.stringify(this.activeLengthwaysCoor))
+        // console.log('横向面板坐标:', JSON.stringify(this.activeCrosswiseCoor))
+
+        // viewer.entities.getById('crosswisePolygon')
+      }, 100);
+    },
+
+    /**
+     * 停止播放动画
+     */
+    stopRealtimeViewModel () {
+      if (!this.coordinateSystemDatasource) return;
+      clearInterval(this.timer);
+      this.animationStatus = "stop";
+      // viewer.clock.currentTime = viewer.clock.stopTime;
+      viewer.clock.shouldAnimate = false;
+    },
+
+    /**
+     * 重新播放动画
+     */
+    restRealtimeViewModel () {
+      if (!this.coordinateSystemDatasource) return;
+      clearInterval(this.timer);
+      this.animationStatus = "starting";
+      this.executeSeconds = 0;
+      this.timer = setInterval(() => {
+        this.executeSeconds += 1;
+        this.activeLengthwaysCoor = [
+          [
+            this.lengthwaysPolygon.a.lng - this.lngSpeed * this.executeSeconds,
+            this.lengthwaysPolygon.a.lat
+          ],
+          [
+            this.lengthwaysPolygon.b.lng - this.lngSpeed * this.executeSeconds,
+            this.lengthwaysPolygon.b.lat
+          ]
+        ];
+        this.activeCrosswiseCoor = [
+          [
+            this.crosswisePolygon.a.lng,
+            this.crosswisePolygon.a.lat - this.latSpeed * this.executeSeconds
+          ],
+          [
+            this.crosswisePolygon.b.lng,
+            this.crosswisePolygon.b.lat - this.latSpeed * this.executeSeconds
+          ]
+        ];
+        // console.log('纵向面板坐标:', JSON.stringify(this.activeLengthwaysCoor))
+        // console.log('横向面板坐标:', JSON.stringify(this.activeCrosswiseCoor))
+      }, 100);
+      viewer.clock.currentTime = viewer.clock.startTime;
+      viewer.clock.shouldAnimate = true;
+    },
+
+    /**
+     * 绘制三维分析坐标系
+     */
+    handleDraw3DCoordinateSystem() {
+      if (this.useBaseMap === '') {
+        this.handleSwitchAssistCloudChart('noGrid')
+      }
+      this.isDraw3DCoordinateSystem = !this.isDraw3DCoordinateSystem;
+      if (this.isDraw3DCoordinateSystem) {
+        this.handleInitCameraAngle()
+        this.handleRestoreCesiumInitConfig('3d')
+        this.onDrawMouseEvent();
+      } else {
+        this.onMouseEvent()
+      }
+    },
+
+    /**
+     * 绘制移动云图
+     */
+    handleDrawMoveImage () {
+      var height
+      // console.log(`${this.selectedDate} ${this.selectedTime}`)
+      let t = new Date(`${this.selectedDate} ${this.selectedTime}`).getTime()
+      for (let i = 1; i < 6; i++) {
+        t = t - 10 * 60 * 1000
+        let date = new Date(t)
+        let serverSrc = `${process.env.NGINX_PATH}${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${(date.getDate()).toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}00/z.png`
+        height = 200000.0 * 1 // 控制层数
+        this.ValidateImg(serverSrc)
+          .then(() => {
+            viewer.entities.add({
+              id: 'Box' + i,
+              show: false,
+              rectangle: {
+                // coordinates: Cesium.Rectangle.fromDegrees(73.0, 12.2, 135, 54.2),
+                coordinates: Cesium.Rectangle.fromDegrees(73.0 + i, 12.2, 135 + i, 54.2),
+                height: height,
+                material: new Cesium.ImageMaterialProperty({
+                  // image: 'http://47.95.129.34:9002/file/move/z-' + (i * 1000) + '.png',
+                  // image: `${serverSrc}/z${i.toString().padStart(2, '0')}.png`,
+                  image: serverSrc,
+                  transparent: true // 是否透明
+                })
+              }
             })
-          }
-        })
-        // 全国-不带网格
-        viewer.entities.add({
-          id: 'china',
-          show: true,
-          rectangle: {
-            coordinates: Cesium.Rectangle.fromDegrees(73, 12.2, 135, 54.2),
-            height: 0,
-            material: new Cesium.ImageMaterialProperty({
-              image: imgBaseUrl + '/z.png',
-              transparent: true, // 是否透明
-              // color: Cesium.Color.ALICEBLUE.withAlpha(0)
-            })
-          }
-        })
+          })
+          .catch(err => {
+            console.log('图片资源不存在!', serverSrc)
+          })
+      }
+    },
+
+    /**
+     * 绘制移动云图
+     */
+    removeMoveImage () {
+      window.clearInterval(moveCloudTimer)// 清除定时器
+      for (let i = 1; i < 7; i++) {
+        const moveImage = viewer.entities.getById('Box' + i)
+        if (moveImage) {
+          moveImage.show = false
+        }
+      }
+    },
+
+    // 3D展示
+    handleGo3D() {
+      window.open(process.env._3D_ADDRESS)
+      // window.open('http://localhost/cesium+three/3d.html')
+      // this.$router.push('/china3d')
+    },
+
+    handleCancelDraw() {
+      if (this.isCutout || this.isDrawCoordinateSystem) {
+        mouseDrawEventHandler && mouseDrawEventHandler.destroy();
+        viewer.entities.remove(viewer.entities.getById("cutoutPolyline"));
+        // 重新设置鼠标事件对象
+        this.onMouseEvent();
+      }
+    },
+
+    /**
+     * 显示/隐藏立体图层
+     */
+    showLevelInfo() {
+      this.activeModule = '3DCloud'
+      this.handleHiddenAssistCloudChart()
+      this.handleRestoreCesiumInitConfig()
+      // this.handleExitMouseDrawEvent()
+      this.showLevel(viewer)
+      if (viewer.entities.getById(`3d-map-0`)) {
+        this.showLevel(viewer)
+      } else {
+        for (let i = 0; i <= 19; i++) {
+          setTimeout(() => {
+            drawImageLevel(viewer, i)
+          }, 1000 * i)
+        }
       }
       /* eslint-enable */
-
-      // 绘制移动云图
-      // setTimeout(() => {
-      //   drawMoveImage(viewer)
-      //   // 绘制多层云图
-      //   // for (let i = 0; i <= 20; i++) {
-      //   //   drawImageLevel(viewer, i)
-      //   // }
-      // }, 5000)
-      // eslint-disable-next-line no-undef
-      viewer.clock.onStop.addEventListener(clock => {
-        if (process.env.NODE_ENV === 'development') console.log('动画停止啦')
-        clearInterval(this.timer)
-      })
-
-      // 点击home键进行跳转
-      // eslint-disable-next-line no-undef
-      viewer.homeButton.viewModel.command.beforeExecute.addEventListener(
-        function(e) {
-          e.cancel = true
-          // 你要飞的位置
-          that.flytoPosition()
-        }
-      )
-
-      setTimeout(() => {
-        that.flytoPosition()
-      }, 2000)
     },
+
+    setTooltip() {
+      /* eslint-disable */
+      viewer.homeButton.viewModel.tooltip = '初始位置'
+      viewer.fullscreenButton.viewModel.tooltip = '全屏显示'
+      /* eslint-enable */
+    },
+
+    moveImage() {
+      // 隐藏多层效果
+      this.removeMoveImage()
+      var executeCount = 1
+      window.clearInterval(moveCloudTimer)
+      moveCloudTimer = setInterval(() => {
+        if (executeCount >= 2) {
+          var num = executeCount - 1
+          var getCurrentBox1 = viewer.entities.getById('Box' + num)
+          if (getCurrentBox1) {
+            getCurrentBox1.show = false
+          }
+        }
+        if (executeCount === 7) {
+          // window.clearInterval(moveCloudTimer)
+          executeCount = 1
+          // removeMoveImage(viewer)
+          // console.log('executeCount==', executeCount)
+          // return
+        }
+        var getCurrentBox = viewer.entities.getById('Box' + executeCount)
+        if (getCurrentBox) {
+          getCurrentBox.show = true
+        }
+
+        executeCount = executeCount + 1
+      }, 1000)
+    },
+
+    removeLevel() {
+      if (!viewer.entities.getById(`3d-map-0`)) return
+      showImage = false
+      for (let i = 0; i <= 23; i++) {
+        var entity = viewer.entities.getById(`3d-map-${i}`)
+        if (entity) {
+          entity.show = false
+        }
+      }
+    },
+
+    showLevel() {
+      showImage = !showImage
+      for (let i = 0; i <= 23; i++) {
+        var entity = viewer.entities.getById(`3d-map-${i}`)
+        entity.show = showImage
+      }
+    },
+
+    drawImageLevel(imageName) {
+      viewer.entities.add({
+        id: `3d-map-${imageName}`,
+        show: false,
+        rectangle: {
+          coordinates: Cesium.Rectangle.fromDegrees(73, 12.2, 135, 54.2),
+          height: 20000 + imageName * 20000,
+          material: new Cesium.ImageMaterialProperty({
+            image: 'http://47.95.129.34:9002/file/china/z' + imageName + '.png',
+            transparent: true // 是否透明
+          })
+        }
+      })
+    },
+
     /* 获取camera高度  */
     getCameraHeight() {
       /* eslint-disable */
@@ -684,6 +1030,7 @@ export default {
       }
       /* eslint-enable */
     },
+
     /**
      * 获取camera中心点坐标
      */
@@ -706,6 +1053,7 @@ export default {
         height: height
       }
     },
+
     ajustHeight(tileset) {
       // tileset调整高度
       var heightOffset = 200000
@@ -744,6 +1092,7 @@ export default {
         }
       })
     },
+
     // 禁止相机地形穿透
     cameraStop() {
       /* eslint-disable */
@@ -769,6 +1118,10 @@ export default {
       }, Cesium.ScreenSpaceEventType.MIDDLE_DOWN)
       /* eslint-enable */
     },
+
+    /**
+     * 
+     */
     createCanvasImage(
       className,
       startLocationX,
@@ -785,7 +1138,7 @@ export default {
         newCanvas.width = width
         newCanvas.height = height
         newCanvas.className = className
-        container.appendChild(newCanvas)
+        // container.appendChild(newCanvas)
         const context = newCanvas.getContext('2d')
         const image = new Image()
         image.setAttribute('crossorigin', 'anonymous')
@@ -813,144 +1166,30 @@ export default {
       // 隐藏多层效果
       this.activeModule = 'moveCloud'
       this.flytoPosition()
-      this.exitTwoDimension()
-      this.hiddenImage()
+      this.handleExitMouseDrawEvent()
+      this.handleHiddenAssistCloudChart()
       /* eslint-disable */
-      removeLevel(viewer, this.showImage)
-      moveImage(viewer, this.intervalInfo)
+      this.removeLevel()
+      this.moveImage()
       /* eslint-enable */
-    },
-
-    // 数据同步
-    twoDimensionDataSync({ key, value }) {
-      this[key] = value
-    },
-
-    // 开始绘制坐标系
-    handleDrawCoordinateSystem() {
-      if (this.useBaseMap === '') {
-        this.handleSwitchCloudChart('noGrid')
-      }
-      this.handleInitCamera()
-      this.handleSwitchTwoDimension()
-      // this.$refs.twoDimension.$emit('handleDrawCoordinateSystem')
-      viewer.entities.remove(viewer.entities.getById("cutoutPolyline"));
-      // 删除三维坐标系数据 start
-      viewer.dataSources.remove(this.d3CoordinateSystemDatasource);
-      viewer.dataSources.remove(this.coverageDatasource);
-      this.d3CoordinateSystemDatasource = null;
-      this.coverageDatasource = null;
-      this.isShowCoverage = false;
-      this.isDraw3DCoordinateSystem = false;
-      // 删除三维坐标系数据 end
-
-      this.isLocalAnalysis = false;
-      this.isCutout = false;
-
-      // 避免鼠标事件冲突 start
-      this.mouseEventHandler && this.mouseEventHandler.destroy();
-      this.mouseEventHandler = null;
-      this.mouseDrawEventHandler && this.mouseDrawEventHandler.destroy();
-      this.mouseDrawEventHandler = null;
-      // 避免鼠标事件冲突 end
-
-      this.isDrawCoordinateSystem = !this.isDrawCoordinateSystem;
-      if (this.isDrawCoordinateSystem) {
-        // 删除对应的canvas元素
-        $("#heatmap .cut-wall").remove();
-        $("#heatmap .coordinate-system-base-map").remove();
-        viewer.dataSources.remove(this.coordinateSystemDatasource);
-        viewer.dataSources.remove(this.animationPolygonDatasource);
-        this.coordinateSystemDatasource = null;
-        this.animationPolygonDatasource = null;
-        this.onDrawMouseEvent();
-      }
-    },
-
-    // 返回初始视角
-    handleInitCamera() {
-      // 设置镜头位置与方向
-      console.log(
-        'this.getInitCameraData===返回初始视角===',
-        this.getInitCameraData
-      )
-      if (this.getInitCameraData) {
-        const initialPosition = new Cesium.Cartesian3.fromDegrees(
-          Number(this.getInitCameraData.lon),
-          Number(this.getInitCameraData.lat),
-          Number(this.getInitCameraData.height)
-        )
-        const homeCameraView = {
-          destination: initialPosition,
-          orientation: {
-            heading: Cesium.Math.toRadians(
-              Number(this.getInitCameraData.heading)
-            ),
-            pitch: Cesium.Math.toRadians(Number(this.getInitCameraData.pitch)),
-            roll: 0.0
-          }
-        }
-        // eslint-disable-next-line no-undef
-        viewer.scene.camera.setView(homeCameraView)
-      }
-    },
-
-    // 绘制三维分析坐标系
-    handleDraw3DCoordinateSystem() {
-      if (this.useBaseMap === '') {
-        this.handleSwitchCloudChart('noGrid')
-      }
-      this.handleSwitchTwoDimension()
-      this.handleInitCamera()
-      // this.$refs.twoDimension.$emit('handleDraw3DCoordinateSystem')
-      this.isCutout = false;
-      // 删除三维坐标系数据 start
-      this.isDrawCoordinateSystem = false;
-      viewer.dataSources.remove(this.coordinateSystemDatasource);
-      viewer.dataSources.remove(this.animationPolygonDatasource);
-      this.coordinateSystemDatasource = null;
-      this.animationPolygonDatasource = null;
-      // 删除三维坐标系数据 end
-      this.isLocalAnalysis = false;
-
-      // 避免鼠标事件冲突 start
-      this.mouseEventHandler && this.mouseEventHandler.destroy();
-      this.mouseEventHandler = null;
-      // 避免鼠标事件冲突 end
-
-      this.isDraw3DCoordinateSystem = !this.isDraw3DCoordinateSystem;
-      if (this.isDraw3DCoordinateSystem) {
-        // 删除对应的canvas元素
-        $("#heatmap .cut-wall").remove();
-        $("#heatmap .coordinate-system-base-map").remove();
-        viewer.dataSources.remove(this.d3CoordinateSystemDatasource);
-        viewer.dataSources.remove(this.coverageDatasource);
-        this.coverageDatasource = null;
-        this.d3CoordinateSystemDatasource = null;
-        this.isShowCoverage = false;
-        this.onDrawMouseEvent();
-      }
-      // this.isDraw3DCoordinateSystem = false
     },
 
     // 开始截取剖面
     handleCutoutPolygon() {
       if (this.useBaseMap === '') {
-        this.handleSwitchCloudChart('noGrid')
+        this.handleSwitchAssistCloudChart('noGrid')
       }
-      this.handleSwitchTwoDimension()
-      this.handleInitCamera()
+      this.handleRestoreCesiumInitConfig()
+      this.handleInitCameraAngle()
       // this.$refs.twoDimension.$emit('handleCutoutPolygon')
       // 绘制3维
       this.isDraw3DCoordinateSystem = false;
       this.cutoutWallMaterialArr = [];
-      // console.log(this.mouseDrawEventHandler)
       // 当前动画的时间
       let currentTime = JSON.parse(JSON.stringify(viewer.clock.currentTime));
       // 销毁之前鼠标绘制事件对象
-      this.mouseDrawEventHandler && this.mouseDrawEventHandler.destroy();
-      this.mouseDrawEventHandler = null;
-      // this.isLocalAnalysis = false
+      mouseDrawEventHandler && mouseDrawEventHandler.destroy();
+      mouseDrawEventHandler = null;
       this.isDrawCoordinateSystem = false;
 
       this.cutoutPosition = [];
@@ -961,8 +1200,8 @@ export default {
         viewer.entities.remove(viewer.entities.getById("cutoutPolyline"));
       } else {
         // 避免鼠标事件冲突 start
-        this.mouseEventHandler && this.mouseEventHandler.destroy();
-        this.mouseEventHandler = null;
+        mouseEventHandler && mouseEventHandler.destroy();
+        mouseEventHandler = null;
         // 避免鼠标事件冲突 end
 
         this.isCutout = true;
@@ -987,20 +1226,20 @@ export default {
 
     // 显示/隐藏图层
     handleToggleShow() {
-      if (!this.d3CoordinateSystemDatasource) return;
+      if (!this.threeDCoordSystemDatasource) return;
       let height = 360000;
       this.isShowCoverage = !this.isShowCoverage;
       // 三维气象分析
-      this.isDraw3DCoordinateSystem = false;
+      // this.isDraw3DCoordinateSystem = false;
 
       if (this.coverageDatasource) {
-        // console.log('this.coverageDatasource', this.coverageDatasource)
         this.coverageDatasource.entities.show = this.isShowCoverage;
         // for (let i = 0; i <= 19; i++) {
         //   let entity = this.coverageDatasource.entities.getById(`coordinate-system-base-map${i}`)
         //   entity.show = this.isShowCoverage
         // }
       } else {
+        console.log('this.drawCoverageCoordinate', this.drawCoverageCoordinate)
         let { a, b } = this.drawCoverageCoordinate;
         let coordinateSystemCzml = [
           {
@@ -1013,38 +1252,39 @@ export default {
           Cesium.CzmlDataSource.load(coordinateSystemCzml)
         );
         coordinateSystem.then(datasource => {
+          console.log('datasource', datasource)
           this.coverageDatasource = datasource;
           for (let i = 0; i < 20; i++) {
             this.createCanvasImage(
               `coordinate-system-base-map coordinate-system-base-map${i}`,
-              this.getClipData({ lng: a.lng, lat: b.lat }).clipX,
-              this.getClipData({ lng: a.lng, lat: b.lat }).clipY,
+              coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX,
+              coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY,
               Math.abs(
-                this.getClipData({
+                coordMatrixingPX({
                   lng: a.lng,
                   lat: b.lat
-                }).clipX - this.getClipData({ lng: b.lng, lat: b.lat }).clipX
+                }).clipX - coordMatrixingPX({ lng: b.lng, lat: b.lat }).clipX
               ),
               Math.abs(
-                this.getClipData({
+                coordMatrixingPX({
                   lng: a.lng,
                   lat: b.lat
-                }).clipY - this.getClipData({ lng: a.lng, lat: a.lat }).clipY
+                }).clipY - coordMatrixingPX({ lng: a.lng, lat: a.lat }).clipY
               ),
               Math.abs(
-                this.getClipData({
+                coordMatrixingPX({
                   lng: a.lng,
                   lat: b.lat
-                }).clipX - this.getClipData({ lng: b.lng, lat: b.lat }).clipX
+                }).clipX - coordMatrixingPX({ lng: b.lng, lat: b.lat }).clipX
               ),
               Math.abs(
-                this.getClipData({
+                coordMatrixingPX({
                   lng: a.lng,
                   lat: b.lat
-                }).clipY - this.getClipData({ lng: a.lng, lat: a.lat }).clipY
+                }).clipY - coordMatrixingPX({ lng: a.lng, lat: a.lat }).clipY
               ),
               // `http://47.95.129.34:9002/file/china/z${i}.png`,
-              `${gis.nginxFilePath}${this.dataTime}/z${i.toString().padStart(2, '0')}.png`,
+              `${this.imgBaseUrl}/z${i.toString().padStart(2, '0')}.png`,
               "rgba(10,20,36,0)"
             ).then(canvas => {
               datasource.entities.add({
@@ -1059,36 +1299,31 @@ export default {
                   height: height * ((i + 1) / 20),
                   material: new Cesium.ImageMaterialProperty({
                     image: canvas,
-                    transparent: true, // 是否透明
+                    transparent: false, // 是否透明
                     color: Cesium.Color.ALICEBLUE.withAlpha(0.5)
                   })
                 }
-              });
-            });
+              })
+            })
           }
-        });
+        })
       }
     },
 
-    // 局部分析
-    handleLocalAnalysis() {
-      this.$refs.twoDimension.$emit('handleLocalAnalysis')
-    },
-
-    // 监听绘制鼠标事件
-    onDrawMouseEvent() {
+    /**
+     * 监听鼠标绘制事件
+     */
+    onDrawMouseEvent () {
       // 处理用户输入事件
-      this.mouseDrawEventHandler = new Cesium.ScreenSpaceEventHandler(
+      mouseDrawEventHandler = new Cesium.ScreenSpaceEventHandler(
         viewer.scene.canvas
       );
       let positions = [];
       let poly = undefined;
-      // 左键单击
-      this.mouseDrawEventHandler.setInputAction(movement => {
+      // 左击事件
+      mouseDrawEventHandler.setInputAction(movement => {
         // console.log('左键点击', movement)
-        if (!viewer.scene.camera) {
-          return;
-        }
+        if (!viewer.scene.camera) return
 
         let cartesian = viewer.scene.camera.pickEllipsoid(
           movement.position,
@@ -1107,37 +1342,38 @@ export default {
           arr.pop();
           let i = this.cutoutWallMaterialArr.length;
           for (; i < arr.length - 1; i++) {
-            this.getLineDataInfo({
+            this.handleGetLineDataInfo({
               a: {
                 x: parseInt(
-                  this.getClipData(this.d3ToLng(this.cutoutPosition[i])).clipX
+                  coordMatrixingPX(spaceCoordToLng(this.cutoutPosition[i])).clipX
                 ),
                 y: parseInt(
-                  this.getClipData(this.d3ToLng(this.cutoutPosition[i])).clipY
+                  coordMatrixingPX(spaceCoordToLng(this.cutoutPosition[i])).clipY
                 )
               },
               b: {
                 x: parseInt(
-                  this.getClipData(this.d3ToLng(this.cutoutPosition[i + 1]))
+                  coordMatrixingPX(spaceCoordToLng(this.cutoutPosition[i + 1]))
                     .clipX
                 ),
                 y: parseInt(
-                  this.getClipData(this.d3ToLng(this.cutoutPosition[i + 1]))
+                  coordMatrixingPX(spaceCoordToLng(this.cutoutPosition[i + 1]))
                     .clipY
                 )
               }
             }).then(response => {
-              this.cutoutWallMaterialArr.push(`http://47.95.129.34:9002/file/map/line/${response}`)
+              console.log(response)
+              this.cutoutWallMaterialArr.push(`http://47.95.129.34:9005/file/map/${this.dateTime}/line/${response}`)
               // this.cutoutWallMaterialArr.push(
-              //   gis.nginxFilePath + this.dataTime + "/line/" + response
+              //   process.env.NGINX_PATH + this.dateTime + "/line/" + response
               // );
             });
           }
         }
         // 剖面最多可绘制5个点
         if (this.isCutout && this.cutoutPosition.length === 6) {
-          this.mouseDrawEventHandler && this.mouseDrawEventHandler.destroy();
-          this.mouseDrawEventHandler = null;
+          mouseDrawEventHandler && mouseDrawEventHandler.destroy();
+          mouseDrawEventHandler = null;
           this.isCutout = false;
 
           // 删除截取线条
@@ -1157,41 +1393,44 @@ export default {
           this.cutoutPosition.length === 3
         ) {
           // 绘制完成隐藏地图 start
-          // this.$emit("hideBaseMap");
-          this.handleHideBaseMap()
+          this.handleHiddenAssistCloudChart()
           // 绘制完成隐藏地图 end
           let self = this;
-          this.mouseDrawEventHandler && this.mouseDrawEventHandler.destroy();
-          this.mouseDrawEventHandler = null;
+          mouseDrawEventHandler && mouseDrawEventHandler.destroy()
+          mouseDrawEventHandler = null;
           this.isCutout = false;
 
           // 删除截取线条
-          viewer.entities.remove(viewer.entities.getById("cutoutPolyline"));
+          viewer.entities.remove(viewer.entities.getById('cutoutPolyline'))
           this.cutoutPosition.pop();
           // console.log('坐标系的范围', this.cutoutPosition)
 
-          this.point1 = transitionCoordinate(this.cutoutPosition[0]);
-          this.point2 = transitionCoordinate(this.cutoutPosition[1]);
+          if (this.isMobile) {
+            let point = transitionCoordinate(this.cutoutPosition[0])
+            point = point.split(',').map(item => Number(item))
+            this.point1 = `${point[0]-1.5},${point[1]+1}`
+            this.point2 = `${point[0]+1.5},${point[1]-1}`
+            console.log(this.point1, this.point2)
+          } else {
+            this.point1 = transitionCoordinate(this.cutoutPosition[0])
+            this.point2 = transitionCoordinate(this.cutoutPosition[1])
+          }
 
           // 坐标转换
           function transitionCoordinate(cartesian3) {
-            let ellipsoid = viewer.scene.globe.ellipsoid;
-            let cartographic = ellipsoid.cartesianToCartographic(cartesian3);
-            let lat = Cesium.Math.toDegrees(cartographic.latitude);
-            let lng = Cesium.Math.toDegrees(cartographic.longitude);
-            return `${lng},${lat}`;
+            let ellipsoid = viewer.scene.globe.ellipsoid
+            let cartographic = ellipsoid.cartesianToCartographic(cartesian3)
+            let lat = Cesium.Math.toDegrees(cartographic.latitude)
+            let lng = Cesium.Math.toDegrees(cartographic.longitude)
+            return `${lng},${lat}`
           }
-
-          // this.isDrawCoordinateSystem = false
-          // this.isDraw3DCoordinateSystem = false
-          // 二维分析
-          if (this.isDrawCoordinateSystem) this.animationStatus = "stop";
-          this.handleCreateCoordinateSystem();
-          this.onMouseEvent();
+          this.handleCreateCoordinateSystem()
+          this.onMouseEvent()
         }
-      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
 
-      this.mouseDrawEventHandler.setInputAction(movement => {
+      // 鼠标移动事件
+      mouseDrawEventHandler.setInputAction(movement => {
         // console.log('鼠标移动', movement)
         // 选择球体上的一个坐标
         let cartesian = viewer.scene.camera.pickEllipsoid(
@@ -1199,7 +1438,7 @@ export default {
           viewer.scene.globe.ellipsoid
         );
         // console.log('cartesian', cartesian)
-        if (positions.length >= 1) {
+        if (!this.isMobile && positions.length >= 1) {
           // 如果定义了对象，则返回true，否则返回false
           if (!Cesium.defined(poly)) {
             poly = new PolyLinePrimitive(positions);
@@ -1226,14 +1465,15 @@ export default {
         }
       }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
-      this.mouseDrawEventHandler.setInputAction(movement => {
+      // 右击事件
+      mouseDrawEventHandler.setInputAction(movement => {
         // 绘制坐标系忽略右击事件
         if (this.isDrawCoordinateSystem || this.isDraw3DCoordinateSystem)
           return;
 
         // console.log('右击事件')
-        this.mouseDrawEventHandler && this.mouseDrawEventHandler.destroy();
-        this.mouseDrawEventHandler = null;
+        mouseDrawEventHandler && mouseDrawEventHandler.destroy();
+        mouseDrawEventHandler = null;
         this.isCutout = false;
 
         // 删除截取线条
@@ -1244,7 +1484,7 @@ export default {
         setTimeout(() => {
           console.log("开始绘制剖面了");
           console.log(
-            "this.cutoutWallMaterialArr============================",
+            "this.cutoutWallMaterialArr",
             this.cutoutWallMaterialArr
           );
           this.handleDrawCutoutPolygon(180000.0);
@@ -1288,14 +1528,17 @@ export default {
       })();
     },
 
-    // 鼠标事件监听
+    /**
+     * 鼠标事件监听
+     */
     onMouseEvent() {
       let ellipsoid = viewer.scene.globe.ellipsoid;
-      this.mouseEventHandler = new Cesium.ScreenSpaceEventHandler(
+      mouseEventHandler = new Cesium.ScreenSpaceEventHandler(
         viewer.scene.canvas
       );
 
-      this.mouseEventHandler.setInputAction(movement => {
+      // left click event
+      mouseEventHandler.setInputAction(movement => {
         let pick = viewer.scene.pick(movement.position);
         // Cesium.defined(pick) && console.log(pick.id.id)
         if (Cesium.defined(pick) && pick.id.id.indexOf("wall") > -1) {
@@ -1305,9 +1548,10 @@ export default {
         } else {
           this.activeEntityCollection = null;
         }
-      }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+      }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
 
-      this.mouseEventHandler.setInputAction(movement => {
+      // move event
+      mouseEventHandler.setInputAction(movement => {
         let cartesian = viewer.camera.pickEllipsoid(
           movement.endPosition,
           ellipsoid
@@ -1326,13 +1570,13 @@ export default {
       }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
     },
 
-    getInitCamera(movement) {
+    getInitCamera (movement) {
       //得到当前三维场景
-      var scene = viewer.scene;
-      var camera = viewer.camera;
+      var scene = viewer.scene
+      var camera = viewer.camera
       //得到当前三维场景的椭球体
-      var ellipsoid = scene.globe.ellipsoid;
-      var cartesianPick = viewer.scene.pickPosition(movement.position);
+      var ellipsoid = scene.globe.ellipsoid
+      var cartesianPick = viewer.scene.pickPosition(movement.position)
       if (cartesianPick) {
         // var cartographic = ellipsoid.cartesianToCartographic(cartesianPick);
         // var lon = Cesium.Math.toDegrees(cartographic.longitude).toFixed(7);
@@ -1363,15 +1607,15 @@ export default {
       }
     },
 
-    // 创建坐标轴 localAnalysis: 是否为局部分析（不创建动画面板）
-    handleCreateCoordinateSystem() {
+    /**
+     * 创建坐标轴
+     */
+    handleCreateCoordinateSystem () {
       // 停止动画
       clearInterval(this.timer);
-      viewer.clock.shouldAnimate = false;
+      // viewer.clock.shouldAnimate = false;
 
       // 116.06,40.42 116.96,39.42
-      // console.log(this.point1.split(','))
-      // console.log(this.point2.split(','))
       let point1 = this.point1.split(",").map(item => {
         return Number(item);
       });
@@ -1384,6 +1628,7 @@ export default {
       } else {
         extrudedHeight = 200000;
       }
+      console.log(point1, point2)
 
       // point1坐标位置信息
       let point1Location = {};
@@ -1418,7 +1663,7 @@ export default {
           }
         };
 
-        this.drawCoordinateSystem({
+        this.handleDrawCoordinateSystem({
           a: {
             lng: point1[0],
             lat: point2[1]
@@ -1440,6 +1685,7 @@ export default {
           b: { lng: point2[0], lat: point1[1] }
         };
       } else if (point1Location.left && !point1Location.top) {
+        // point1位于左下角的位置
         this.drawCoverageCoordinate = {
           a: {
             lng: point1[0],
@@ -1450,8 +1696,7 @@ export default {
             lat: point2[1]
           }
         };
-        // point1位于左下角的位置
-        this.drawCoordinateSystem({
+        this.handleDrawCoordinateSystem({
           a: {
             lng: point1[0],
             lat: point1[1]
@@ -1484,7 +1729,7 @@ export default {
             lat: point1[1]
           }
         };
-        this.drawCoordinateSystem({
+        this.handleDrawCoordinateSystem({
           a: {
             lng: point2[0],
             lat: point2[1]
@@ -1517,7 +1762,7 @@ export default {
             lat: point2[1]
           }
         };
-        this.drawCoordinateSystem({
+        this.handleDrawCoordinateSystem({
           a: {
             lng: point2[0],
             lat: point1[1]
@@ -1550,9 +1795,12 @@ export default {
         ((5 * 60) / 20) /
         10;
 
-      // 绘制动画面板
-      if (this.isDrawCoordinateSystem || this.isLocalAnalysis) {
-        this.drawAnimationPolygon({
+      console.log('this.lngSpeed', this.lngSpeed)
+      console.log('this.latSpeed', this.latSpeed)
+
+      // 绘制二维动画面板
+      if (this.isDrawCoordinateSystem) {
+        this.handleDrawAnimationPolygon({
           lengthwaysPolygon: this.lengthwaysPolygon,
           crosswisePolygon: this.crosswisePolygon,
           height: 0.0,
@@ -1561,18 +1809,25 @@ export default {
       }
       // 绘制三维立体图层
       if (this.isDraw3DCoordinateSystem) {
-        this.handleToggleShow();
+        this.handleToggleShow()
       }
       // 绘制完成（关闭标志位）
-      this.isDrawCoordinateSystem = false;
-      this.isDraw3DCoordinateSystem = false;
+      this.isDrawCoordinateSystem = false
+      this.isDraw3DCoordinateSystem = false
     },
 
-    // 绘制坐标系 a: 左下角 b: 右下角 c: 右上角 d: 左上角 height: 相对于球体的高度 extrudedHeight: 坐标系的高度
-    // a: -90, 38 b: -80, 38 c: -80, 44 d: -90, 44
-    drawCoordinateSystem({ a, b, height, extrudedHeight }) {
-      // console.log('坐标系a:', a)
-      // console.log('坐标系b:', b)
+    /**
+     * 绘制坐标系
+     * @params a: 左下角
+     * @params b: 右下角
+     * @params c: 右上角
+     * @params d: 左上角
+     * @params height: 相对于球体的高度
+     * @params extrudedHeight: 坐标系的高度
+     */
+    handleDrawCoordinateSystem({ a, b, height, extrudedHeight }) {
+      console.log('坐标系a:', a)
+      console.log('坐标系b:', b)
       let coordinateSystemCzml = [
         {
           id: "document",
@@ -1736,10 +1991,10 @@ export default {
           }
         }
       ];
-      // console.log('this.getClipData({ lng: a.lng, lat: b.lat }).clipX:', this.getClipData({ lng: a.lng, lat: b.lat }).clipX)
-      // console.log('this.getClipData({ lng: a.lng, lat: b.lat }).clipY:', this.getClipData({ lng: a.lng, lat: b.lat }).clipY)
-      // console.log('width:',  Math.abs(this.getClipData({ lng: a.lng, lat: b.lat }).clipX - this.getClipData({ lng: b.lng, lat: b.lat }).clipX))
-      // console.log('height:',  Math.abs(this.getClipData({ lng: a.lng, lat: b.lat }).clipY - this.getClipData({ lng: a.lng, lat: a.lat }).clipY))
+      // console.log('coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX:', coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX)
+      // console.log('coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY:', coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY)
+      // console.log('width:',  Math.abs(coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX - coordMatrixingPX({ lng: b.lng, lat: b.lat }).clipX))
+      // console.log('height:',  Math.abs(coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY - coordMatrixingPX({ lng: a.lng, lat: a.lat }).clipY))
 
       let coordinateSystem = viewer.dataSources.add(
         Cesium.CzmlDataSource.load(coordinateSystemCzml)
@@ -1748,41 +2003,41 @@ export default {
         if (this.isDrawCoordinateSystem) {
           this.coordinateSystemDatasource = datasource;
         } else {
-          this.d3CoordinateSystemDatasource = datasource;
+          this.threeDCoordSystemDatasource = datasource;
         }
         this.createCanvasImage(
           "coordinate-system-base-map",
-          this.getClipData({ lng: a.lng, lat: b.lat }).clipX,
-          this.getClipData({ lng: a.lng, lat: b.lat }).clipY,
+          coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX,
+          coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY,
           Math.abs(
-            this.getClipData({ lng: a.lng, lat: b.lat }).clipX -
-              this.getClipData({
+            coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX -
+              coordMatrixingPX({
                 lng: b.lng,
                 lat: b.lat
               }).clipX
           ),
           Math.abs(
-            this.getClipData({ lng: a.lng, lat: b.lat }).clipY -
-              this.getClipData({
+            coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY -
+              coordMatrixingPX({
                 lng: a.lng,
                 lat: a.lat
               }).clipY
           ),
           Math.abs(
-            this.getClipData({ lng: a.lng, lat: b.lat }).clipX -
-              this.getClipData({
+            coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipX -
+              coordMatrixingPX({
                 lng: b.lng,
                 lat: b.lat
               }).clipX
           ),
           Math.abs(
-            this.getClipData({ lng: a.lng, lat: b.lat }).clipY -
-              this.getClipData({
+            coordMatrixingPX({ lng: a.lng, lat: b.lat }).clipY -
+              coordMatrixingPX({
                 lng: a.lng,
                 lat: a.lat
               }).clipY
           ),
-          gis.nginxFilePath + this.dataTime + "/z.png",
+          `${this.imgBaseUrl}/z.png`,
           // 'http://47.95.129.34:9002/file/china/z.png',
           "rgba(10,20,36,0.7)"
         ).then(canvas => {
@@ -1803,199 +2058,127 @@ export default {
             }
           });
         });
-        // setTimeout(() => {
-        //   datasource.entities.add({
-        //     rectangle: {
-        //       coordinates: Cesium.Rectangle.fromDegrees(a.lng, a.lat, b.lng, b.lat),
-        //       height: 0,
-        //       material: new Cesium.ImageMaterialProperty({
-        //         image: imgDatasource,
-        //         transparent: true, // 是否透明
-        //         color: Cesium.Color.ALICEBLUE.withAlpha(0.5)
-        //       })
-        //     }
-        //   })
-        // }, 1000)
       });
       viewer.zoomTo(coordinateSystem);
     },
 
-    // 绘制动画面板 lengthwaysPolygon: 横向运动面板的两点坐标 crosswisePolygon: 纵向运动面板的两点坐标  height: 相对于球体的高度 extrudedHeight: 面板的高度
-    drawAnimationPolygon({
+    /**
+     * 绘制动画面板
+     * @params lengthwaysPolygon: 纵向运动面板的两点坐标
+     * @params crosswisePolygon: 横向运动面板的两点坐标
+     * @params height: 相对于球体的高度
+     * @params extrudedHeight: 面板的高度
+     */ 
+    handleDrawAnimationPolygon({
       lengthwaysPolygon,
       crosswisePolygon,
       height,
       extrudedHeight
     }) {
-      let YSpeed = (crosswisePolygon.a.lat - lengthwaysPolygon.a.lat) / 3;
-      let XSpeed = (lengthwaysPolygon.a.lng - crosswisePolygon.b.lng) / 3;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('crosswisePolygon', crosswisePolygon)
+        console.log('lengthwaysPolygon', lengthwaysPolygon)
+      }
+      let YSpeed = (crosswisePolygon.a.lat - lengthwaysPolygon.a.lat) / 3
+      let XSpeed = (lengthwaysPolygon.a.lng - crosswisePolygon.b.lng) / 3
 
       // 计算整个动画运动过程的点数
       // 纵向
-      let lengthwaysPositionArr = [];
+      let lengthwaysPositionArr = []
       // 横向
-      let crosswisePositionArr = [];
-
-      // console.log('lengthwaysPolygon:', lengthwaysPolygon)
-      // console.log('crosswisePolygon:', crosswisePolygon)
+      let crosswisePositionArr = []
 
       let CrosswiseMaterialList = [];
       let LengthwaysMaterialList = [];
-      let startTime = Date.parse("2012-08-04T16:00:00Z");
-      let lngSpeed =
-        Math.abs(crosswisePolygon.b.lng - crosswisePolygon.a.lng) / (5 * 60);
-      let latSpeed =
-        Math.abs(lengthwaysPolygon.a.lat - crosswisePolygon.a.lat) / (5 * 60);
-      // debugger
-      for (let i = 0; i < 150; i++) {
-        if (this.isLocalAnalysis) {
-          if (i === 0) {
-            lengthwaysPositionArr.push({
-              a: {
-                x: parseInt(
-                  this.getClipData({
-                    lng: lengthwaysPolygon.a.lng + lngSpeed * i * 2,
-                    lat: lengthwaysPolygon.a.lat
-                  }).clipX
-                ),
-                y: parseInt(
-                  this.getClipData({
-                    lng: lengthwaysPolygon.a.lng + lngSpeed * i * 2,
-                    lat: lengthwaysPolygon.a.lat
-                  }).clipY
-                )
-              },
-              b: {
-                x: parseInt(
-                  this.getClipData({
-                    lng: lengthwaysPolygon.b.lng + lngSpeed * i * 2,
-                    lat: lengthwaysPolygon.b.lat
-                  }).clipX
-                ),
-                y: parseInt(
-                  this.getClipData({
-                    lng: lengthwaysPolygon.b.lng + lngSpeed * i * 2,
-                    lat: lengthwaysPolygon.b.lat
-                  }).clipY
-                )
-              }
-            });
-            crosswisePositionArr.push({
-              a: {
-                x: parseInt(
-                  this.getClipData({
-                    lng: crosswisePolygon.a.lng,
-                    lat: crosswisePolygon.a.lat - latSpeed * i * 2
-                  }).clipX
-                ),
-                y: parseInt(
-                  this.getClipData({
-                    lng: crosswisePolygon.a.lng,
-                    lat: crosswisePolygon.a.lat - latSpeed * i * 2
-                  }).clipY
-                )
-              },
-              b: {
-                x: parseInt(
-                  this.getClipData({
-                    lng: crosswisePolygon.b.lng,
-                    lat: crosswisePolygon.b.lat - latSpeed * i * 2
-                  }).clipX
-                ),
-                y: parseInt(
-                  this.getClipData({
-                    lng: crosswisePolygon.b.lng,
-                    lat: crosswisePolygon.b.lat - latSpeed * i * 2
-                  }).clipY
-                )
-              }
-            });
+      // 定时动画开始事件、运动时长（秒）、经纬步长、步长比例等
+      let startTime = Date.parse("2012-08-04T16:00:00Z")
+      let AniDuration = 5 * 60
+      let lngSpeed = Math.abs(crosswisePolygon.b.lng - crosswisePolygon.a.lng) / AniDuration
+      let latSpeed = Math.abs(lengthwaysPolygon.a.lat - crosswisePolygon.a.lat) / AniDuration
+      let speedScale = 5
+      for (let i = 0; i < AniDuration/speedScale; i++) {
+        lengthwaysPositionArr.push({
+          a: {
+            x: parseInt(
+              coordMatrixingPX({
+                lng: lengthwaysPolygon.a.lng + lngSpeed * i * speedScale,
+                lat: lengthwaysPolygon.a.lat
+              }).clipX
+            ),
+            y: parseInt(
+              coordMatrixingPX({
+                lng: lengthwaysPolygon.a.lng + lngSpeed * i * speedScale,
+                lat: lengthwaysPolygon.a.lat
+              }).clipY
+            )
+          },
+          b: {
+            x: parseInt(
+              coordMatrixingPX({
+                lng: lengthwaysPolygon.b.lng + lngSpeed * i * speedScale,
+                lat: lengthwaysPolygon.b.lat
+              }).clipX
+            ),
+            y: parseInt(
+              coordMatrixingPX({
+                lng: lengthwaysPolygon.b.lng + lngSpeed * i * speedScale,
+                lat: lengthwaysPolygon.b.lat
+              }).clipY
+            )
           }
-        } else {
-          lengthwaysPositionArr.push({
-            a: {
-              x: parseInt(
-                this.getClipData({
-                  lng: lengthwaysPolygon.a.lng + lngSpeed * i * 2,
-                  lat: lengthwaysPolygon.a.lat
-                }).clipX
-              ),
-              y: parseInt(
-                this.getClipData({
-                  lng: lengthwaysPolygon.a.lng + lngSpeed * i * 2,
-                  lat: lengthwaysPolygon.a.lat
-                }).clipY
-              )
-            },
-            b: {
-              x: parseInt(
-                this.getClipData({
-                  lng: lengthwaysPolygon.b.lng + lngSpeed * i * 2,
-                  lat: lengthwaysPolygon.b.lat
-                }).clipX
-              ),
-              y: parseInt(
-                this.getClipData({
-                  lng: lengthwaysPolygon.b.lng + lngSpeed * i * 2,
-                  lat: lengthwaysPolygon.b.lat
-                }).clipY
-              )
-            }
-          });
-          crosswisePositionArr.push({
-            a: {
-              x: parseInt(
-                this.getClipData({
-                  lng: crosswisePolygon.a.lng,
-                  lat: crosswisePolygon.a.lat - latSpeed * i * 2
-                }).clipX
-              ),
-              y: parseInt(
-                this.getClipData({
-                  lng: crosswisePolygon.a.lng,
-                  lat: crosswisePolygon.a.lat - latSpeed * i * 2
-                }).clipY
-              )
-            },
-            b: {
-              x: parseInt(
-                this.getClipData({
-                  lng: crosswisePolygon.b.lng,
-                  lat: crosswisePolygon.b.lat - latSpeed * i * 2
-                }).clipX
-              ),
-              y: parseInt(
-                this.getClipData({
-                  lng: crosswisePolygon.b.lng,
-                  lat: crosswisePolygon.b.lat - latSpeed * i * 2
-                }).clipY
-              )
-            }
-          });
-        }
+        });
+        crosswisePositionArr.push({
+          a: {
+            x: parseInt(
+              coordMatrixingPX({
+                lng: crosswisePolygon.a.lng,
+                lat: crosswisePolygon.a.lat - latSpeed * i * speedScale
+              }).clipX
+            ),
+            y: parseInt(
+              coordMatrixingPX({
+                lng: crosswisePolygon.a.lng,
+                lat: crosswisePolygon.a.lat - latSpeed * i * speedScale
+              }).clipY
+            )
+          },
+          b: {
+            x: parseInt(
+              coordMatrixingPX({
+                lng: crosswisePolygon.b.lng,
+                lat: crosswisePolygon.b.lat - latSpeed * i * speedScale
+              }).clipX
+            ),
+            y: parseInt(
+              coordMatrixingPX({
+                lng: crosswisePolygon.b.lng,
+                lat: crosswisePolygon.b.lat - latSpeed * i * speedScale
+              }).clipY
+            )
+          }
+        });
         // CrosswiseMaterialList.push({
         //   "interval": `${new Date((startTime  + 2 * 1000 * i)).toISOString()}/${new Date((startTime  + 2 * 1000 * (i + i))).toISOString()}`,
         //   "uri": this.createCanvasImage(`lengthways-canvas${i}`, 420, 200, 100, require(`../../assets/images/${i+1}.png`))
         // })
       }
-      // console.log(crosswisePositionArr)
       crosswisePositionArr.forEach((item, i) => {
         CrosswiseMaterialList.push({
           interval: `${new Date(
-            startTime + 2 * 1000 * i
+            startTime + speedScale * 1000 * i
           ).toISOString()}/${new Date(
-            startTime + 2 * 1000 * (i + i)
+            startTime + speedScale * 1000 * (i + i)
           ).toISOString()}`,
           uri: this.createWallCanvasImage(
             `cut-wall crosswise-canvas${i}`,
             item.a.x > item.b.x ? item.b.x : item.a.x,
             0,
             Math.abs(item.a.x - item.b.x),
-            200,
+            200 * mapScaling,
             Math.abs(item.a.x - item.b.x),
             200,
             // `http://47.95.129.34:9002/file/map/row/png/row${item.a.y}.png`,
-            gis.nginxFilePath + this.dataTime + "/row/row" + item.a.y + ".png",
+            `${this.imgBaseUrl}/row/row${item.a.y / mapScaling}.png`,
             "rgba(240,240,240,0.5)"
           )
         });
@@ -2003,27 +2186,29 @@ export default {
       lengthwaysPositionArr.forEach((item, i) => {
         LengthwaysMaterialList.push({
           interval: `${new Date(
-            startTime + 2 * 1000 * i
+            startTime + speedScale * 1000 * i
           ).toISOString()}/${new Date(
-            startTime + 2 * 1000 * (i + i)
+            startTime + speedScale * 1000 * (i + i)
           ).toISOString()}`,
           uri: this.createWallCanvasImage(
             `cut-wall lengthway-canvas${i}`,
             item.a.y > item.b.y ? item.b.y : item.a.y,
             0,
             Math.abs(item.a.y - item.b.y),
-            200,
+            200 * mapScaling,
             Math.abs(item.a.y - item.b.y),
             200,
             // `http://47.95.129.34:9002/file/map/col/png/col${item.a.x}.png`,
-            gis.nginxFilePath + this.dataTime + "/col/col" + item.a.x + ".png",
+            `${this.imgBaseUrl}/col/col${item.a.x / mapScaling}.png`,
             "rgba(240,240,240,0.5)"
           )
         });
       });
-      // console.log('CrosswiseMaterialList', CrosswiseMaterialList)
-      // console.log('LengthwaysMaterialList', LengthwaysMaterialList)
-
+      if (process.env.NODE_ENV === 'development') {
+        console.log('CrosswiseMaterialList', CrosswiseMaterialList)
+        console.log('LengthwaysMaterialList', LengthwaysMaterialList)
+      }
+      
       let PolygonCzml = [
         {
           id: "document",
@@ -2167,30 +2352,20 @@ export default {
         });
       }, 1000);
       // viewer.zoomTo(coordinateSystem)
-      // console.log('折线=========')
     },
 
-    // 经纬度像素换算
-    getClipData({ lng, lat }) {
-      const westLon = 73; // 西经
-      const eastLon = 135; // 东经
-      const northLan = 54.2; // 北纬边界值
-      const southLan = 12.2; // 南纬
-
-      // let x1=123  //裁剪的西经
-      // let x2=133 //裁剪的东经
-      // let y1=44.2 //裁剪的北纬
-      // let y2=34.2 //裁剪的南纬
-
-      const clipX = (lng - westLon) * 100;
-      const clipY = (northLan - lat) * 100;
-      return {
-        clipX,
-        clipY
-      };
-    },
-
-    // 生成canvas图片(动画面板)
+    /**
+     * 生成canvas图片(动画面板)
+     * @params className: canvas类名
+     * @params startLocationX: 从X轴的裁切位置
+     * @params startLocationY: 从Y轴的裁切位置
+     * @params cutoutWidth: 裁切的宽度
+     * @params cutoutHeight: 裁切的高度
+     * @params width: 填充的宽度
+     * @params height: 填充的高度
+     * @params imgSrc: 图片地址
+     * @params bgColor: canvas背景颜色
+     */
     createWallCanvasImage(
       className,
       startLocationX,
@@ -2202,12 +2377,12 @@ export default {
       imgSrc,
       bgColor
     ) {
-      let container = document.getElementById("heatmap");
+      // let container = document.getElementById("heatmap");
       let newCanvas = document.createElement("canvas");
       newCanvas.width = width;
       newCanvas.height = height;
       newCanvas.className = className;
-      container.appendChild(newCanvas);
+      // container.appendChild(newCanvas);
       let context = newCanvas.getContext("2d");
       context.fillStyle = bgColor;
       context.fillRect(0, 0, width, height);
@@ -2219,7 +2394,6 @@ export default {
       image.src = imgSrc;
       image.onload = function() {
         // console.log('canvas绘图啦')
-        // console.log(startLocationX, startLocationY, cutoutWidth, cutoutHeight, width, height);
         context.drawImage(
           image,
           startLocationX,
@@ -2235,133 +2409,33 @@ export default {
       return newCanvas;
     },
 
-    // 3D空间坐标转为经纬度坐标
-    d3ToLng(item) {
-      let ellipsoid = viewer.scene.globe.ellipsoid;
-      let cartographic = ellipsoid.cartesianToCartographic(item);
-      let lat = Cesium.Math.toDegrees(cartographic.latitude);
-      let lng = Cesium.Math.toDegrees(cartographic.longitude);
-      return {
-        lng,
-        lat
-      };
-    },
-
-    // 获取剖面png
-    getLineDataInfo({ a, b }) {
+    /**
+     * 获取剖面png
+     */
+    handleGetLineDataInfo({ a, b }) {
       //x1=4400&x2=4500&y1=3200&y2=3400
-      if (this.fileName == "") {
-        console.log("未选择数据时间");
-        return;
-      }
+      // if (this.fileName == "") {
+      //   console.log("未选择数据时间");
+      //   return;
+      // }
       return new Promise((resolve, reject) => {
-        // let data={
-        //   x1: parseInt(this.getClipData(bar(this.cutoutPosition[0])).clipX),
-        //   x2: parseInt(this.getClipData(bar(this.cutoutPosition[1])).clipX),
-        //   y1: parseInt(this.getClipData(bar(this.cutoutPosition[0])).clipY),
-        //   y2: parseInt(this.getClipData(bar(this.cutoutPosition[1])).clipY)
-        // }
         let data = {
-          fileName: this.fileName,
-          x1: a.x,
-          x2: b.x,
-          y1: a.y,
-          y2: b.y
+          fileName: this.dateTime,
+          x1: a.x / mapScaling,
+          x2: b.x / mapScaling,
+          y1: a.y / mapScaling,
+          y2: b.y / mapScaling
         };
         this.GetLineData(data).then(response => {
-          let { data } = response
           // console.log('response=============', response)
+          let { data } = response
           resolve(data);
         });
       });
     },
 
-    // 播放
-    playRealtimeViewModel() {
-      if (!this.coordinateSystemDatasource || this.isLocalAnalysis) return;
-      clearInterval(this.timer);
-      // 根据当前时间继续前进
-      viewer.clock.tick();
-      // viewer.clock.currentTime = viewer.clock.currentTime;
-      viewer.clock.shouldAnimate = true;
-      // console.log('经度步长', this.lngSpeed)
-      // console.log('纬度步长', this.latSpeed)
-      this.animationStatus = "starting";
-      this.timer = setInterval(() => {
-        this.executeSeconds += 1;
-        this.activeLengthwaysCoor = [
-          [
-            this.lengthwaysPolygon.a.lng - this.lngSpeed * this.executeSeconds,
-            this.lengthwaysPolygon.a.lat
-          ],
-          [
-            this.lengthwaysPolygon.b.lng - this.lngSpeed * this.executeSeconds,
-            this.lengthwaysPolygon.b.lat
-          ]
-        ];
-        this.activeCrosswiseCoor = [
-          [
-            this.crosswisePolygon.a.lng,
-            this.crosswisePolygon.a.lat - this.latSpeed * this.executeSeconds
-          ],
-          [
-            this.crosswisePolygon.b.lng,
-            this.crosswisePolygon.b.lat - this.latSpeed * this.executeSeconds
-          ]
-        ];
-        // console.log('纵向面板坐标:', JSON.stringify(this.activeLengthwaysCoor))
-        // console.log('横向面板坐标:', JSON.stringify(this.activeCrosswiseCoor))
-
-        // viewer.entities.getById('crosswisePolygon')
-      }, 100);
-    },
-
-    // 停止
-    stopRealtimeViewModel() {
-      if (!this.coordinateSystemDatasource || this.isLocalAnalysis) return;
-      clearInterval(this.timer);
-      this.animationStatus = "stop";
-      // viewer.clock.currentTime = viewer.clock.stopTime;
-      viewer.clock.shouldAnimate = false;
-    },
-
-    // 重新播放
-    restRealtimeViewModel() {
-      if (!this.coordinateSystemDatasource || this.isLocalAnalysis) return;
-      clearInterval(this.timer);
-      this.animationStatus = "starting";
-      this.executeSeconds = 0;
-      this.timer = setInterval(() => {
-        this.executeSeconds += 1;
-        this.activeLengthwaysCoor = [
-          [
-            this.lengthwaysPolygon.a.lng - this.lngSpeed * this.executeSeconds,
-            this.lengthwaysPolygon.a.lat
-          ],
-          [
-            this.lengthwaysPolygon.b.lng - this.lngSpeed * this.executeSeconds,
-            this.lengthwaysPolygon.b.lat
-          ]
-        ];
-        this.activeCrosswiseCoor = [
-          [
-            this.crosswisePolygon.a.lng,
-            this.crosswisePolygon.a.lat - this.latSpeed * this.executeSeconds
-          ],
-          [
-            this.crosswisePolygon.b.lng,
-            this.crosswisePolygon.b.lat - this.latSpeed * this.executeSeconds
-          ]
-        ];
-        // console.log('纵向面板坐标:', JSON.stringify(this.activeLengthwaysCoor))
-        // console.log('横向面板坐标:', JSON.stringify(this.activeCrosswiseCoor))
-      }, 100);
-      viewer.clock.currentTime = viewer.clock.startTime;
-      viewer.clock.shouldAnimate = true;
-    },
-
-    // 绘制剖面(二维)
-    handleDrawCutoutPolygon(height) {
+    // 绘制切面(二维)
+    handleDrawCutoutPolygon (height) {
       let self = this;
 
       function bar(item) {
@@ -2374,7 +2448,6 @@ export default {
           lat
         };
       }
-
       let width = this.getCanvasWidth({
         point1: bar(this.cutoutPosition[0]),
         point2: bar(this.cutoutPosition[1])
@@ -2430,7 +2503,6 @@ export default {
       let walls = drawWall(this.cutoutPosition);
 
       function createCanvas(className, width, height, imgSrc) {
-        console.log("imgSrc===========================", imgSrc);
         let container = document.getElementById("heatmap");
         let newCanvas = document.createElement("canvas");
         newCanvas.width = width;
@@ -2609,7 +2681,6 @@ export default {
         // console.log('indexOf:', viewer.dataSources.indexOf(this.cutoutPolygonDatasource))
       });
       viewer.zoomTo(cutoutPolygon);
-      // this.$emit('hiddenImage')
       // console.log('绘制完成')
     },
 
@@ -2696,10 +2767,7 @@ export default {
   },
   // eslint-disable-next-line vue/order-in-components
   destroyed() {
-    // console.log('销毁组件啦123')
-    // console.log('销毁组件啦123')
-    // clearInterval(this.timer)
-    // viewer = null
+    viewer = null
   }
 }
 </script>
@@ -2820,7 +2888,7 @@ export default {
     height: 500px;
   }
 }
-@media screen and (max-width: 1100px) {
+@media screen and (max-width: 450px) {
   .china-2d-component {
     .toolbars-section {
       top: 0;

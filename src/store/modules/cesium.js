@@ -1,10 +1,9 @@
 
 import { getLineData } from '@/api/cesium'
+import axios from 'axios'
 
 const cesium = {
   state: {
-    // token: getToken(),
-    // name: '',
     getInitCameraData: {}
   },
 
@@ -24,6 +23,18 @@ const cesium = {
         }).catch(error => {
           reject(error)
         })
+      })
+    },
+    // 验证图片是否存在
+    ValidateImg ({ commit }, data) {
+      return new Promise((resolve, reject) => {
+        axios.get(data)
+          .then(() => {
+            resolve()
+          })
+          .catch(err => {
+            reject(err)
+          })
       })
     }
   }
